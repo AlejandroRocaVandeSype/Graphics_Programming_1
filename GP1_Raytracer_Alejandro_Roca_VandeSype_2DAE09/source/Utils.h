@@ -13,7 +13,38 @@ namespace dae
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			//todo W1
-			assert(false && "No Implemented Yet!");
+
+			// 1º Vector from ray origin towards center circle
+			Vector3 toCenter{ sphere.origin - ray.origin };
+
+			// 2º Form a right triangle with Sphere center - Ray origin - ray direction
+			// .... Hypotenuse -> || toCenter ||
+			float toCenterDist { toCenter.Magnitude() }; 
+			// .... Adjacent side -> Using dot product -> Projection of the toCenter into ray direction
+			float rayDistance{ Vector3::Dot(toCenter, ray.direction) };
+			// .... Get perpendicular side (opp side) by using Pythagorean formula
+			float oppSide{ sqrt((toCenterDist * toCenterDist) - (rayDistance * rayDistance)) };
+
+			// 3º Form another right triangle with the intersection points ( The side between intersection
+			// points and the center its the radius)
+			float intersectionDist{ sqrt((sphere.radius * sphere.radius) - (oppSide * oppSide)) };
+
+			float tZero{ toCenterDist - intersectionDist };
+
+			float tOne{ toCenterDist + intersectionDist };
+
+			if (tZero > 0 && tOne > 0)
+			{
+				// Full intersection of the ray
+				float closestHit{ std::min(tZero, tOne) };
+
+				hitRecord.t = closestHit;
+				hitRecord.didHit = true;
+				hitRecord.materialIndex = sphere.materialIndex;
+				return true;
+			}
+
+			// No intersection of the ray
 			return false;
 		}
 
