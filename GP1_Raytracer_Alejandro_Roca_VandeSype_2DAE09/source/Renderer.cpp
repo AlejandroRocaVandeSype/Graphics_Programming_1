@@ -9,6 +9,7 @@
 #include "Material.h"
 #include "Scene.h"
 #include "Utils.h"
+#include <iostream>
 
 using namespace dae;
 
@@ -54,13 +55,7 @@ void Renderer::Render(Scene* pScene) const
 
 			// HitRecord containing more info about potential hit
 			HitRecord closestHit{};
-
-			//TEMP SPHERE (default material = solid red - id = 0)
-			//................ origin, radius and material Index
-			Sphere testSphere{ {0.f, 0.f, 100.f}, 50.f , 0 };
-
-			// Perform Sphere HitTest
-			GeometryUtils::HitTest_Sphere(testSphere, viewRay, closestHit);
+			pScene->GetClosestHit(viewRay, closestHit);
 
 			if (closestHit.didHit)
 			{
@@ -71,7 +66,7 @@ void Renderer::Render(Scene* pScene) const
 
 				// Verify t-values
 				// Remap t-value to [0, 1] (should lay between ~[50,90]
-				/*const float scaled_t{ (closestHit.t - 50.f) / 40.f };
+			/*	const float scaled_t{ (closestHit.t - 50.f) / 40.f };
 				finalColor = { scaled_t, scaled_t, scaled_t };*/
 			}
 

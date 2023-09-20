@@ -11,9 +11,7 @@ namespace dae
 #pragma region Sphere HitTest
 		//SPHERE HIT-TESTS
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
-		{
-			//todo W1
-
+		{	
 			// 1º Vector from ray origin towards center circle
 			Vector3 toCenter{ sphere.origin - ray.origin };
 
@@ -22,29 +20,46 @@ namespace dae
 			float toCenterDist { toCenter.Magnitude() }; 
 			// .... Adjacent side -> Using dot product -> Projection of the toCenter into ray direction
 			float rayDistance{ Vector3::Dot(toCenter, ray.direction) };
-			// .... Get perpendicular side (opp side) by using Pythagorean formula
-			float oppSide{ sqrt((toCenterDist * toCenterDist) - (rayDistance * rayDistance)) };
 
-			// 3º Form another right triangle with the intersection points ( The side between intersection
-			// points and the center its the radius)
-			float intersectionDist{ sqrt((sphere.radius * sphere.radius) - (oppSide * oppSide)) };
+			// Used to determine how many intersections the ray will have
+			// Only continue calculations if D > 0 (Full intersection)
+			// D = b^2 - 4ac
+			// ... a -> Ray direction -> Which is normalized = 1
+			// ... b -> How far along the ray's direction the closest approach to the sphere center is. (Vector projection)
+			// ... c -> How far the center the sphere's center is from the origin of the ray (||toCenter||^2 - r^2)
 
-			float tZero{ toCenterDist - intersectionDist };
-
-			float tOne{ toCenterDist + intersectionDist };
-
-			if (tZero > 0 && tOne > 0)
+			float radiusSquared{ sphere.radius * sphere.radius };
+			float discriminant = (rayDistance * rayDistance) - ((toCenterDist * toCenterDist) - radiusSquared);
+			if (discriminant >= 0)
 			{
-				// Full intersection of the ray
-				float closestHit{ std::min(tZero, tOne) };
+				// FULL INTERSECTION OF THE RAY ( 2 intersection points)
+				// .... Get perpendicular side (opp side) by using Pythagorean formula
+				float oppSide{ sqrt((toCenterDist * toCenterDist) - (rayDistance * rayDistance)) };
 
-				hitRecord.t = closestHit;
-				hitRecord.didHit = true;
-				hitRecord.materialIndex = sphere.materialIndex;
-				return true;
+				// 3º Form another right triangle with the intersection points ( The side between intersection
+				// points and the center its the radius)
+				float intersectionDist{ sqrt((radiusSquared) - (oppSide * oppSide)) };
+
+				float tZero{ toCenterDist - intersectionDist };
+				float tOne{ toCenterDist + intersectionDist };
+
+				if (tZero > 0 && tOne > 0)
+				{
+					// Full intersection of the ray
+					float closestHit{ std::min(tZero, tOne) };
+
+					// Save the smallest one
+					if (hitRecord.t >= closestHit)
+					{
+						hitRecord.t = closestHit;
+						hitRecord.didHit = true;
+						hitRecord.materialIndex = sphere.materialIndex;
+					}
+					return true;
+				}
 			}
-
-			// No intersection of the ray
+			
+			// No intersection or not a full intersection of the ray
 			return false;
 		}
 
