@@ -57,6 +57,7 @@ void Renderer::Render(Scene* pScene) const
 			HitRecord closestHit{};
 			pScene->GetClosestHit(viewRay, closestHit);
 
+			// SHADING 
 			if (closestHit.didHit)
 			{
 				// If we hit something, set finalColor to material color, else keep black
@@ -65,8 +66,7 @@ void Renderer::Render(Scene* pScene) const
 
 
 				// Verify t-values
-				// Remap t-value to [0, 1] (should lay between ~[50,90]
-			/*	const float scaled_t{ (closestHit.t - 50.f) / 40.f };
+				/*const float scaled_t{ closestHit.t / 500.f };
 				finalColor = { scaled_t, scaled_t, scaled_t };*/
 			}
 
