@@ -64,6 +64,8 @@ void Renderer::Render(Scene* pScene) const
 				// Use HitRecord::materialIndex to find the corresponding material
 				finalColor = materials[closestHit.materialIndex]->Shade();
 
+	/*			const float scaled_t = (closestHit.t - 50.f) / 40.f;;
+				finalColor = { scaled_t, scaled_t, scaled_t };*/
 
 				// Verify t-values
 				/*const float scaled_t{ closestHit.t / 500.f };

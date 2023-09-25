@@ -12,50 +12,39 @@ namespace dae
 		//SPHERE HIT-TESTS
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{	
-			// 1º Vector from ray origin towards center circle
-			Vector3 toCenter{ sphere.origin - ray.origin };
 
-			// 2º Form a right triangle with Sphere center - Ray origin - ray direction
-			// .... Hypotenuse -> || toCenter ||
-			float toCenterDist { toCenter.Magnitude() }; 
-			// .... Adjacent side -> Using dot product -> Projection of the toCenter into ray direction
-			float rayDistance{ Vector3::Dot(toCenter, ray.direction) };
+			Vector3 sphereToRay{ ray.origin - sphere.origin };
 
-			// Used to determine how many intersections the ray will have
-			// Only continue calculations if D > 0 (Full intersection)
-			// D = b^2 - 4ac
-			// ... a -> Ray direction -> Which is normalized = 1
-			// ... b -> How far along the ray's direction the closest approach to the sphere center is. (Vector projection)
-			// ... c -> How far the center the sphere's center is from the origin of the ray (||toCenter||^2 - r^2)
+			// Calculate Discriminant to see if there is a full Intersection ( Discriminant > 0 )
+			float a{ Vector3::Dot(ray.direction, ray.direction) };
+			float b{ Vector3::Dot((2 * ray.direction), sphereToRay) };
+			float c{ (Vector3::Dot(sphereToRay, sphereToRay)) - (sphere.radius * sphere.radius) };
 
-			float radiusSquared{ sphere.radius * sphere.radius };
-			float discriminant = (rayDistance * rayDistance) - ((toCenterDist * toCenterDist) - radiusSquared);
-			if (discriminant >= 0)
+			float discriminant{ (b * b) - (4 * a * c) };
+			if (discriminant > 0)
 			{
 				// FULL INTERSECTION OF THE RAY ( 2 intersection points)
-				// .... Get perpendicular side (opp side) by using Pythagorean formula
-				float oppSide{ sqrt((toCenterDist * toCenterDist) - (rayDistance * rayDistance)) };
+				float discSquared{ sqrt(discriminant) };
+				float tZero{ (-b - discSquared) / 2 * a };
+				float tOne{ (-b + discSquared) / 2 * a };
 
-				// 3º Form another right triangle with the intersection points ( The side between intersection
-				// points and the center its the radius)
-				float intersectionDist{ sqrt((radiusSquared) - (oppSide * oppSide)) };
-
-				float tZero{ toCenterDist - intersectionDist };
-				float tOne{ toCenterDist + intersectionDist };
-
-				if (tZero > 0 && tOne > 0)
+				// Check if it is in [tMin, tMax]	
+				if ( ( tZero > ray.min && tOne > ray.min ) && (tZero < ray.max && tOne < ray.max ) )
 				{
-					// Full intersection of the ray
+					// Valid Range
 					float closestHit{ std::min(tZero, tOne) };
-
 					// Save the smallest one
 					if (hitRecord.t >= closestHit)
 					{
+						// Calculate intersection point
+						hitRecord.origin = ray.origin + (tZero * ray.direction);
+						hitRecord.normal = (hitRecord.origin - sphere.origin);
 						hitRecord.t = closestHit;
 						hitRecord.didHit = true;
 						hitRecord.materialIndex = sphere.materialIndex;
 					}
 					return true;
+										
 				}
 			}
 			
@@ -78,13 +67,12 @@ namespace dae
 			float t{ Vector3::Dot(toOrigin, plane.normal) / Vector3::Dot(ray.direction, plane.normal) };
 			if (t > ray.min && t < ray.max)
 			{
-				// t inside min and max interval from the ray
+				// t inside [tMin, tMax] from the ray
 				if (hitRecord.t >= t)
 				{
 					// Calculate the intersection point 
-					Vector3 intersectPoint{ ray.origin + (t * ray.direction) };
+					hitRecord.origin = ray.origin + (t * ray.direction);
 
-					hitRecord.origin = intersectPoint;
 					hitRecord.normal = plane.normal;
 					hitRecord.t = t;
 					hitRecord.didHit = true;
