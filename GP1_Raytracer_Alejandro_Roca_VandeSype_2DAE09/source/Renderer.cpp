@@ -28,6 +28,10 @@ void Renderer::Render(Scene* pScene) const
 	auto& materials = pScene->GetMaterials();
 	auto& lights = pScene->GetLights();
 
+	// Calculate the camera ONB matrix before "shooting" any ray into the scene
+	// This way we know in which direction and position the camera is 
+	const Matrix cameraToWorld{ camera.CalculateCameraToWorld() };
+
 	// Current aspect ratio
 	float aspectRatio{ m_Width / static_cast<float>(m_Height) };
 	// To get the center of the pixel
@@ -45,12 +49,15 @@ void Renderer::Render(Scene* pScene) const
 		for (int py{}; py < m_Height; ++py)
 		{
 			// For each pixel
-			//... Ray calculation ( Take the FOV into account )
+			//... Ray calculation ( Take aspect ratio and FOV into account )
 			Vector3 rayDirection{};
 			rayDirection.x = (2.f * ((static_cast<float>(px) + halfPixelSize) / static_cast<float>(m_Width)) - 1.f) * aspectRatio * FOV;
 			rayDirection.y = (1.f - 2.f * (static_cast<float>(py) + halfPixelSize) / static_cast<float>(m_Height) ) * FOV;
 			rayDirection.z = 1.f;
-			rayDirection.Normalize();
+
+			// Transform this ray direction using the Camera ONB matrix, so we take into account 
+			// the camera rotation / position
+			rayDirection = cameraToWorld.TransformVector(rayDirection).Normalized();
 
 			// Ray we are casting from the camera towards each pixel
 			Ray viewRay{ camera.origin , rayDirection};

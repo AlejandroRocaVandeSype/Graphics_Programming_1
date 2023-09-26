@@ -104,9 +104,12 @@ namespace dae {
 
 	Matrix Matrix::CreateTranslation(float x, float y, float z)
 	{
-		//todo W2
-		assert(false && "Not Implemented Yet");
-		return {};
+		Matrix translationMatrix;	
+		translationMatrix.data[3][0] = x;
+		translationMatrix.data[3][0] = y;
+		translationMatrix.data[3][0] = z;
+
+		return translationMatrix;
 	}
 
 	Matrix Matrix::CreateTranslation(const Vector3& t)
@@ -116,30 +119,57 @@ namespace dae {
 
 	Matrix Matrix::CreateRotationX(float pitch)
 	{
-		//todo W2
-		assert(false && "Not Implemented Yet");
-		return {};
+		Matrix xRotMatrix;
+
+		float cosP{ cos(pitch) };
+		float sinP{ sin(pitch) };
+
+		// Left-handed coord system
+		xRotMatrix.data[1][1] = cosP;
+		xRotMatrix.data[1][2] = sinP;
+		xRotMatrix.data[2][1] = -sinP;
+		xRotMatrix.data[2][2] = cosP;
+
+		return xRotMatrix;
 	}
 
 	Matrix Matrix::CreateRotationY(float yaw)
 	{
-		//todo W2
-		assert(false && "Not Implemented Yet");
-		return {};
+		Matrix yRotMatrix;
+
+		float cosY{ cos(yaw) };
+		float sinY{ sin(yaw) };
+
+		yRotMatrix.data[0][0] = cosY;
+		yRotMatrix.data[0][2] = -sinY;
+		yRotMatrix.data[2][0] = sinY;
+		yRotMatrix.data[2][2] = cosY;
+
+		return yRotMatrix;
 	}
 
 	Matrix Matrix::CreateRotationZ(float roll)
 	{
-		//todo W2
-		assert(false && "Not Implemented Yet");
-		return {};
+		Matrix zRotMatrix;
+
+		float cosR{ cos(roll) };
+		float sinR{ sin(roll) };
+
+		zRotMatrix.data[0][0] = cosR;
+		zRotMatrix.data[0][1] = sinR;
+		zRotMatrix.data[1][0] = -sinR;
+		zRotMatrix.data[1][1] = cosR;
+
+		return zRotMatrix;
 	}
 
 	Matrix Matrix::CreateRotation(const Vector3& r)
 	{
-		//todo W2
-		assert(false && "Not Implemented Yet");
-		return {};
+		Matrix xRotation{ CreateRotationX(r.x) };
+		Matrix yRotation{ CreateRotationX(r.y) };
+		Matrix zRotation{ CreateRotationX(r.z) };
+
+		return zRotation * yRotation * xRotation;
 	}
 
 	Matrix Matrix::CreateRotation(float pitch, float yaw, float roll)
@@ -149,9 +179,12 @@ namespace dae {
 
 	Matrix Matrix::CreateScale(float sx, float sy, float sz)
 	{
-		//todo W2
-		assert(false && "Not Implemented Yet");
-		return {};
+		Matrix scaleMatrix;
+		scaleMatrix.data[0][0] = sx;
+		scaleMatrix.data[1][1] = sy;
+		scaleMatrix.data[2][2] = sz;
+
+		return scaleMatrix;
 	}
 
 	Matrix Matrix::CreateScale(const Vector3& s)
