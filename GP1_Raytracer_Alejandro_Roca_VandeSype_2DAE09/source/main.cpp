@@ -45,7 +45,7 @@ int main(int argc, char* args[])
 	const auto pTimer = new Timer();
 	const auto pRenderer = new Renderer(pWindow);
 
-	const auto pScene = new Scene_W1();
+	const auto pScene = new Scene_W2();
 	pScene->Initialize();
 
 	//Start loop
@@ -53,27 +53,6 @@ int main(int argc, char* args[])
 
 	// Start Benchmark
 	// pTimer->StartBenchmark();
-
-	//// Testing Dot and Cross products
-	//Vector3 v1{ 1, 0, 0 };
-	//Vector3 v2{ 0, 2, 2 };
-	//Vector3 v3{ -1, 2, 1 };
-
-	//std::cout << Vector3::Dot(v1,v2) << std::endl;
-	//std::cout << Vector3::Dot(v2, v1) << std::endl;
-	//std::cout << Vector3::Dot(v1, v3) << std::endl;
-	//std::cout << Vector3::Dot(v2, v3) << std::endl;
-	//std::cout << Vector3::Dot(Vector3::UnitX, Vector3::UnitX) << std::endl; // (1) Same direction
-	//std::cout << Vector3::Dot(Vector3::UnitX, -Vector3::UnitX) << std::endl; // (-1) Opposite Direction
-	//std::cout << Vector3::Dot(Vector3::UnitX, Vector3::UnitY) << std::endl; // (0) Perpendicular
-
-	//Vector3 crossResult{};
-	//std::cout << "Cross products :";
-	//crossResult = Vector3::Cross(Vector3::UnitZ, Vector3::UnitX);
-	//std::cout << "(" << crossResult.x << ", " << crossResult.y << ", " << crossResult.z <<")" << std::endl;	// Perpendicular vector for both (0, 1, 0)
-	//
-	//crossResult = Vector3::Cross(Vector3::UnitX, Vector3::UnitZ);
-	//std::cout << "(" << crossResult.x << ", " << crossResult.y << ", " << crossResult.z << ")" << std::endl; // (0, -1, 0)
 
 	float printTimer = 0.f;
 	bool isLooping = true;

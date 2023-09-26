@@ -25,26 +25,30 @@ namespace dae
 			{
 				// FULL INTERSECTION OF THE RAY ( 2 intersection points)
 				float discSquared{ sqrt(discriminant) };
-				float tZero{ (-b - discSquared) / 2 * a };
-				float tOne{ (-b + discSquared) / 2 * a };
+				float newT{ (-b - discSquared) / (2 * a) };
+				if (newT < ray.min)
+				{
+					// T behind the tMin -> use the + formula
+					newT = (-b + discSquared) / (2 * a);
+				}
 
 				// Check if it is in [tMin, tMax]	
-				if ( ( tZero > ray.min && tOne > ray.min ) && (tZero < ray.max && tOne < ray.max ) )
+				if (newT >= ray.min && newT <= ray.max)
 				{
 					// Valid Range
-					float closestHit{ std::min(tZero, tOne) };
-					// Save the smallest one
-					if (hitRecord.t >= closestHit)
+
+					// Check if smaller than the previous t saved
+					if (hitRecord.t >= newT)
 					{
 						// Calculate intersection point
-						hitRecord.origin = ray.origin + (tZero * ray.direction);
-						hitRecord.normal = (hitRecord.origin - sphere.origin);
-						hitRecord.t = closestHit;
+						hitRecord.origin = ray.origin + (newT * ray.direction);
+						hitRecord.normal = (hitRecord.origin - sphere.origin).Normalized();
+						hitRecord.t = newT;
 						hitRecord.didHit = true;
 						hitRecord.materialIndex = sphere.materialIndex;
 					}
 					return true;
-										
+					
 				}
 			}
 			

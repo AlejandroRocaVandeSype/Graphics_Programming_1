@@ -35,20 +35,25 @@ void Renderer::Render(Scene* pScene) const
 	// Ray origin (Camera)
 	const Vector3 origin{ 0, 0, 0 };
 
+	// Calculate the FOV for the ray calculation
+	// (Could be better optimized if we only calculated when it changes
+	// instead of every frame )
+	const float FOV{ tan( (camera.fovAngle * TO_RADIANS) / 2) };
+	
 	for (int px{}; px < m_Width; ++px)
 	{
 		for (int py{}; py < m_Height; ++py)
 		{
 			// For each pixel
-			//... Ray calculation
+			//... Ray calculation ( Take the FOV into account )
 			Vector3 rayDirection{};
-			rayDirection.x = (2.f * (( static_cast<float>(px) + halfPixelSize ) / static_cast<float>(m_Width)) - 1.f ) * aspectRatio;
-			rayDirection.y = 1.f - 2.f * (static_cast<float>(py) + halfPixelSize) / static_cast<float>(m_Height);
+			rayDirection.x = (2.f * ((static_cast<float>(px) + halfPixelSize) / static_cast<float>(m_Width)) - 1.f) * aspectRatio * FOV;
+			rayDirection.y = (1.f - 2.f * (static_cast<float>(py) + halfPixelSize) / static_cast<float>(m_Height) ) * FOV;
 			rayDirection.z = 1.f;
 			rayDirection.Normalize();
 
 			// Ray we are casting from the camera towards each pixel
-			Ray viewRay{ origin , rayDirection};
+			Ray viewRay{ camera.origin , rayDirection};
 
 			// Color to write to the color buffer ( default = black)
 			ColorRGB finalColor{};
@@ -64,7 +69,7 @@ void Renderer::Render(Scene* pScene) const
 				// Use HitRecord::materialIndex to find the corresponding material
 				finalColor = materials[closestHit.materialIndex]->Shade();
 
-	/*			const float scaled_t = (closestHit.t - 50.f) / 40.f;;
+				/*const float scaled_t = (closestHit.t - 50.f) / 40.f;;
 				finalColor = { scaled_t, scaled_t, scaled_t };*/
 
 				// Verify t-values

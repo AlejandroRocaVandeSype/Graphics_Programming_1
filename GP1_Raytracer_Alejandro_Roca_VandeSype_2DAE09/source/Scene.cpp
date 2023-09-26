@@ -137,4 +137,38 @@ namespace dae {
 		AddPlane({ 0.f, 0.f, 125.f }, { 0.f, 0.f,-1.f }, matId_Solid_Magenta);
 	}
 #pragma endregion
+
+
+#pragma region SCENE W2
+
+	void Scene_W2::Initialize()
+	{
+		m_Camera.origin = { 0.f, 3.f, -9.f };
+		m_Camera.fovAngle = 45.f;
+
+		constexpr unsigned char matId_Solid_Red = 0;
+
+		const unsigned char matId_Solid_Blue = AddMaterial(new Material_SolidColor{ colors::Blue });
+		const unsigned char matId_Solid_Yellow = AddMaterial(new Material_SolidColor{ colors::Yellow });
+		const unsigned char matId_Solid_Green = AddMaterial(new Material_SolidColor{ colors::Green });
+		const unsigned char matId_Solid_Magenta = AddMaterial(new Material_SolidColor{ colors::Magenta });
+
+		// planes
+		AddPlane(Vector3{ 0.f, 0.f, 10.f }, Vector3{ 0.f, 0.f, -1.f }, matId_Solid_Magenta); //BACK
+		AddPlane(Vector3{ 0.f, 0.f, 0.f }, Vector3{ 0.f, 1.f, 0.f }, matId_Solid_Yellow); //BOTTOM
+		AddPlane(Vector3{ 0.f, 10.f, 0.f }, Vector3{ 0.f, -1.f, 0.f }, matId_Solid_Yellow); //TOP
+		AddPlane(Vector3{ 5.f, 0.f, 0.f }, Vector3{ -1.f, 0.f, 0.f }, matId_Solid_Green); //RIGHT
+		AddPlane(Vector3{ -5.f, 0.f, 0.f }, Vector3{ 1.f, 0.f, 0.f }, matId_Solid_Green); //LEFT
+
+		AddSphere(Vector3{ -1.75f, 1.f, 0.f }, .75f, matId_Solid_Red);
+		AddSphere(Vector3{ 0.f, 1.f, 0.f }, .75f, matId_Solid_Blue);
+		AddSphere(Vector3{ 1.75f, 1.f, 0.f }, .75f, matId_Solid_Red);
+		AddSphere(Vector3{ -1.75f, 3.f, 0.f }, .75f, matId_Solid_Blue);
+		AddSphere(Vector3{ 0.f, 3.f, 0.f }, .75f, matId_Solid_Red);
+		AddSphere(Vector3{ 1.75f, 3.f, 0.f }, .75f, matId_Solid_Blue);
+
+		AddPointLight(Vector3{ 0.f, 5.f, -5.f }, 70.f, colors::White); //Backlight
+	}
+
+#pragma endregion
 }
