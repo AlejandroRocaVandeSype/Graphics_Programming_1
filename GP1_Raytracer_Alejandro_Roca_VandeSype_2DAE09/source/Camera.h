@@ -5,6 +5,7 @@
 
 #include "Math.h"
 #include "Timer.h"
+#include <iostream>
 
 namespace dae
 {
@@ -18,7 +19,6 @@ namespace dae
 		{
 		}
 
-
 		Vector3 origin{};
 		float fovAngle{90.f};
 
@@ -29,6 +29,10 @@ namespace dae
 
 		float totalPitch{0.f};
 		float totalYaw{0.f};
+		bool canRotate{ true };			// To enable/disable rotations when LMB + RMB is pressed/notpressed
+
+		float movementSpeed{ 0.2f };
+		float rotationSpeed{ 0.06f };
 
 		Matrix cameraToWorld{};
 
@@ -75,9 +79,78 @@ namespace dae
 			//Mouse Input
 			int mouseX{}, mouseY{};
 			const uint32_t mouseState = SDL_GetRelativeMouseState(&mouseX, &mouseY);
+			
+			canRotate = true;
+			UpdateMovement(pKeyboardState, mouseX, mouseY);
 
-			//todo: W2
-			//assert(false && "Not Implemented Yet");
+			if(canRotate)
+				UpdateRotation(mouseX, mouseY);
+		}
+
+		void UpdateMovement(const uint8_t* pKeyboardState, const int mouseX, const int mouseY)
+		{
+			// FORWARD / BACKWARD MOVEMENT
+			if (pKeyboardState[SDL_SCANCODE_W])
+			{
+				origin += forward * movementSpeed;
+			}
+			if (pKeyboardState[SDL_SCANCODE_S])
+			{
+				origin -= forward * movementSpeed;
+			}
+
+			// Forward / BackWard / Up / Down with mouse
+			if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT) )
+			{
+				// Left mouse button (LMB) is pressed
+				if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_RIGHT))
+				{
+					// Right mouse button is also pressed
+					origin += (up * static_cast<float>(-mouseY)) * movementSpeed;
+					canRotate = false;
+				}
+				else
+				{
+					// Only LMB is pressed
+					origin += (forward * static_cast<float>(-mouseY)) * movementSpeed;
+				}
+			}
+
+			// LEFT / RIGHT MOVEMENT 
+			if (pKeyboardState[SDL_SCANCODE_A])
+			{
+				origin -= right * movementSpeed;
+			}
+			if (pKeyboardState[SDL_SCANCODE_D])
+			{
+				origin += right * movementSpeed;
+			}
+		}
+
+		void UpdateRotation(int mouseX, int mouseY)
+		{
+			// Calculate total X rotation
+			if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT))
+			{
+				// Left mouse button pressed
+				totalPitch += static_cast<float>(mouseX) * rotationSpeed;
+			}
+
+			// Calculate total X/Y rotation
+			if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_RIGHT)  && 
+				!(SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT)))
+			{
+				// Right mouse button pressed (And left one is not)
+				totalPitch += static_cast<float>(mouseX) * rotationSpeed;
+				totalYaw += static_cast<float>(mouseY) * rotationSpeed;
+			}
+
+
+			Matrix finalRotation{ Matrix::CreateRotation(Vector3{ totalYaw, totalPitch, 0.f })};
+
+			forward = finalRotation.TransformVector(Vector3::UnitZ);
+			forward.Normalize();
+			
 		}
 	};
 }
