@@ -42,10 +42,23 @@ namespace dae {
 
 	}
 
+	// Returns true on the first hit for the given ray. False otherwise
 	bool Scene::DoesHit(const Ray& ray) const
 	{
-		//todo W3
-		assert(false && "No Implemented Yet!");
+		// Iterate over all spheres from the scene
+		for (const auto& sphere : m_SphereGeometries)
+		{
+			if (GeometryUtils::HitTest_Sphere(sphere, ray))
+				return true;
+		}
+
+		// ..... all planes
+		for (const auto& plane : m_PlaneGeometries)
+		{
+			if (GeometryUtils::HitTest_Plane(plane, ray))
+				return true;
+		}
+
 		return false;
 	}
 

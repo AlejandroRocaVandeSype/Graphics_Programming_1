@@ -36,17 +36,19 @@ namespace dae
 				if (newT >= ray.min && newT <= ray.max)
 				{
 					// Valid Range
-
-					// Check if smaller than the previous t saved
-					if (hitRecord.t >= newT)
+					if (ignoreHitRecord == false)
 					{
-						// Calculate intersection point
-						hitRecord.origin = ray.origin + (newT * ray.direction);
-						hitRecord.normal = (hitRecord.origin - sphere.origin).Normalized();
-						hitRecord.t = newT;
-						hitRecord.didHit = true;
-						hitRecord.materialIndex = sphere.materialIndex;
-					}
+						// Check if smaller than the previous t saved
+						if (hitRecord.t >= newT)
+						{
+							// Calculate intersection point
+							hitRecord.origin = ray.origin + (newT * ray.direction);
+							hitRecord.normal = (hitRecord.origin - sphere.origin).Normalized();
+							hitRecord.t = newT;
+							hitRecord.didHit = true;
+							hitRecord.materialIndex = sphere.materialIndex;
+						}
+					}				
 					return true;
 					
 				}
@@ -71,16 +73,19 @@ namespace dae
 			float t{ Vector3::Dot(toOrigin, plane.normal) / Vector3::Dot(ray.direction, plane.normal) };
 			if (t > ray.min && t < ray.max)
 			{
-				// t inside [tMin, tMax] from the ray
-				if (hitRecord.t >= t)
+				if (ignoreHitRecord == false)
 				{
-					// Calculate the intersection point 
-					hitRecord.origin = ray.origin + (t * ray.direction);
+					// t inside [tMin, tMax] from the ray
+					if (hitRecord.t >= t)
+					{
+						// Calculate the intersection point 
+						hitRecord.origin = ray.origin + (t * ray.direction);
 
-					hitRecord.normal = plane.normal;
-					hitRecord.t = t;
-					hitRecord.didHit = true;
-					hitRecord.materialIndex = plane.materialIndex;
+						hitRecord.normal = plane.normal;
+						hitRecord.t = t;
+						hitRecord.didHit = true;
+						hitRecord.materialIndex = plane.materialIndex;
+					}
 				}
 				return true;
 			}
@@ -130,9 +135,11 @@ namespace dae
 		//Direction from target to light
 		inline Vector3 GetDirectionToLight(const Light& light, const Vector3 origin)
 		{
-			//todo W3
-			assert(false && "No Implemented Yet!");
-			return {};
+			//light.type == LightType::Directional
+			/*
+			Vector3 directionToLight{ light.origin - origin };*/
+
+			return light.origin - origin;
 		}
 
 		inline ColorRGB GetRadiance(const Light& light, const Vector3& target)

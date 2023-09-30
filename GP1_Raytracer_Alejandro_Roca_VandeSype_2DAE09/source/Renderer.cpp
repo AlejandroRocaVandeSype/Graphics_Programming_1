@@ -82,6 +82,27 @@ void Renderer::Render(Scene* pScene) const
 				// Verify t-values
 				/*const float scaled_t{ closestHit.t / 500.f };
 				finalColor = { scaled_t, scaled_t, scaled_t };*/
+
+
+				// Check if the pixel is shadowed
+				for (size_t index{ 0 }; index < lights.size(); ++index)
+				{
+					// Ray from the closestHit towards the light
+					Ray lightRay{ closestHit.origin, LightUtils::GetDirectionToLight(lights[index], closestHit.origin) };
+
+					// Max of the ligh ray will be its own magnitude
+					lightRay.max = lightRay.direction.Magnitude();
+					lightRay.direction = lightRay.direction.Normalized();
+				
+
+					// Check if the ray hits
+					if (pScene->DoesHit(lightRay))
+					{
+						// Darken color
+						finalColor *= 0.5f;
+					}
+				}
+
 			}
 
 			//Update Color in Buffer

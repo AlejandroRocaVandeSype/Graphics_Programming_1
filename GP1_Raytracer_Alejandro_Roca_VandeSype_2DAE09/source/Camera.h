@@ -31,8 +31,9 @@ namespace dae
 		float totalYaw{0.f};
 		bool canRotate{ true };			// To enable/disable rotations when LMB + RMB is pressed/notpressed
 
-		float movementSpeed{ 0.2f };
-		float rotationSpeed{ 0.06f };
+		float movementSpeed{ 0.5f };
+		float rotationSpeed{ 0.03f };
+		float movementInc{ 4.f };
 
 		Matrix cameraToWorld{};
 
@@ -89,14 +90,23 @@ namespace dae
 
 		void UpdateMovement(const uint8_t* pKeyboardState, const int mouseX, const int mouseY)
 		{
+			if (pKeyboardState[SDL_SCANCODE_LSHIFT])
+			{
+				movementInc = 4.f;
+			}
+			else
+			{
+				movementInc = 1.f;
+			}
+
 			// FORWARD / BACKWARD MOVEMENT
 			if (pKeyboardState[SDL_SCANCODE_W])
 			{
-				origin += forward * movementSpeed;
+				origin += forward * movementSpeed * movementInc;
 			}
 			if (pKeyboardState[SDL_SCANCODE_S])
 			{
-				origin -= forward * movementSpeed;
+				origin -= forward * movementSpeed * movementInc;
 			}
 
 			// Forward / BackWard / Up / Down with mouse
@@ -106,24 +116,24 @@ namespace dae
 				if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_RIGHT))
 				{
 					// Right mouse button is also pressed
-					origin += (up * static_cast<float>(-mouseY)) * movementSpeed;
+					origin += (up * static_cast<float>(-mouseY)) * movementSpeed * movementInc;
 					canRotate = false;
 				}
 				else
 				{
 					// Only LMB is pressed
-					origin += (forward * static_cast<float>(-mouseY)) * movementSpeed;
+					origin += (forward * static_cast<float>(-mouseY)) * movementSpeed * movementInc;
 				}
 			}
 
 			// LEFT / RIGHT MOVEMENT 
 			if (pKeyboardState[SDL_SCANCODE_A])
 			{
-				origin -= right * movementSpeed;
+				origin -= right * movementSpeed * movementInc;
 			}
 			if (pKeyboardState[SDL_SCANCODE_D])
 			{
-				origin += right * movementSpeed;
+				origin += right * movementSpeed * movementInc;
 			}
 		}
 
