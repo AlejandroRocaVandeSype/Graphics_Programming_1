@@ -169,7 +169,7 @@ namespace dae {
 		Matrix yRotation{ CreateRotationY(r.y) };
 		Matrix zRotation{ CreateRotationZ(r.z) };
 
-		return zRotation * yRotation * xRotation;
+		return xRotation * yRotation * zRotation;
 	}
 
 	Matrix Matrix::CreateRotation(float pitch, float yaw, float roll)

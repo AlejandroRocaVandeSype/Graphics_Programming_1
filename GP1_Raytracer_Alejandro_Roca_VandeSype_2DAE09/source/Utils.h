@@ -135,10 +135,12 @@ namespace dae
 		//Direction from target to light
 		inline Vector3 GetDirectionToLight(const Light& light, const Vector3 origin)
 		{
-			//light.type == LightType::Directional
-			/*
-			Vector3 directionToLight{ light.origin - origin };*/
-
+			if (light.type == LightType::Directional)
+			{
+				// Directional light doesn't have an origin
+				return light.direction;
+			}
+	
 			return light.origin - origin;
 		}
 
