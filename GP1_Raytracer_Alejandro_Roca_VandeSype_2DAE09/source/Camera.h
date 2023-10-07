@@ -76,11 +76,10 @@ namespace dae
 			//Keyboard Input
 			const uint8_t* pKeyboardState = SDL_GetKeyboardState(nullptr);
 
-
 			//Mouse Input
 			int mouseX{}, mouseY{};
 			const uint32_t mouseState = SDL_GetRelativeMouseState(&mouseX, &mouseY);
-			
+
 			canRotate = true;
 			UpdateMovement(pKeyboardState, mouseX, mouseY);
 

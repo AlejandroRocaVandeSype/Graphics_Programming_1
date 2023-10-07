@@ -15,7 +15,9 @@ using namespace dae;
 
 Renderer::Renderer(SDL_Window * pWindow) :
 	m_pWindow(pWindow),
-	m_pBuffer(SDL_GetWindowSurface(pWindow))
+	m_pBuffer(SDL_GetWindowSurface(pWindow)),
+	m_CurrentLightingMode{ LightingMode::Combined },
+	m_ShadowsEnabled{ true }
 {
 	//Initialize
 	SDL_GetWindowSize(pWindow, &m_Width, &m_Height);
@@ -74,11 +76,11 @@ void Renderer::Render(Scene* pScene) const
 			{
 				// If we hit something, set finalColor to material color, else keep black
 				// Use HitRecord::materialIndex to find the corresponding material
-				finalColor = materials[closestHit.materialIndex]->Shade();
+				//finalColor = materials[closestHit.materialIndex]->Shade();
 
 				// Check if the pixel is shadowed
 				for (size_t index{ 0 }; index < lights.size(); ++index)
-				{
+				{		
 					// Small offset to avoid self-shadowing
 					Vector3 originOffset{ closestHit.origin + (closestHit.normal * 0.001f) };
 
@@ -88,19 +90,27 @@ void Renderer::Render(Scene* pScene) const
 					// Max of the ligh ray will be its own magnitude
 					lightRay.max = lightRay.direction.Magnitude();
 					lightRay.direction = lightRay.direction.Normalized();
-				
-					// Check if the ray hits
-					if (pScene->DoesHit(lightRay))
-					{
-						// Darken color
-						finalColor *= 0.5f;
+
+					// Measure the observed area with the Lambert's Cosine Law 
+					float viewAngle{ Vector3::Dot(closestHit.normal, lightRay.direction) };
+					if(viewAngle > 0) // If it is below 0 the point on the surface points away from the light ( It doesn't contribute for the finalColor)
+						finalColor += LightUtils::GetRadiance(lights[index], closestHit.origin) * viewAngle;
+
+					if (m_ShadowsEnabled)
+					{				
+						// Check if the ray hits
+						if (pScene->DoesHit(lightRay))
+						{
+							// Darken color
+							finalColor *= 0.5f;
+
+						}
 					}
 				}
-
 			}
 
 			//Update Color in Buffer
-			finalColor.MaxToOne();
+			finalColor.MaxToOne(); // Avoid color overflow and normalize the color
 			m_pBufferPixels[px + (py * m_Width)] = SDL_MapRGB(m_pBuffer->format,
 				static_cast<uint8_t>(finalColor.r * 255),
 				static_cast<uint8_t>(finalColor.g * 255),
@@ -116,4 +126,29 @@ void Renderer::Render(Scene* pScene) const
 bool Renderer::SaveBufferToImage() const
 {
 	return SDL_SaveBMP(m_pBuffer, "RayTracing_Buffer.bmp");
+}
+
+
+void Renderer::ToggleShadows()
+{
+	m_ShadowsEnabled = !m_ShadowsEnabled;
+}
+
+void Renderer::CycleLightingMode()
+{
+	switch (m_CurrentLightingMode)
+	{
+		case dae::Renderer::LightingMode::ObservedArea:
+			m_CurrentLightingMode = LightingMode::Radiance;
+			break;
+		case dae::Renderer::LightingMode::Radiance:
+			m_CurrentLightingMode = LightingMode::BRDF;
+			break;
+		case dae::Renderer::LightingMode::BRDF:
+			m_CurrentLightingMode = LightingMode::Combined;
+			break;
+		case dae::Renderer::LightingMode::Combined:
+			m_CurrentLightingMode = LightingMode::ObservedArea;
+			break;
+	}
 }

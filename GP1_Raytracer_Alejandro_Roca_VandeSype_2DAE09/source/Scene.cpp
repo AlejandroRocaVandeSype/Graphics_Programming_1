@@ -7,7 +7,8 @@ namespace dae {
 #pragma region Base Scene
 	//Initialize Scene with Default Solid Color Material (RED)
 	Scene::Scene():
-		m_Materials({ new Material_SolidColor({1,0,0})})
+		m_Materials({ new Material_SolidColor({1,0,0})}),
+		m_UseShadows{ true }
 	{
 		m_SphereGeometries.reserve(32);
 		m_PlaneGeometries.reserve(32);
@@ -60,6 +61,17 @@ namespace dae {
 		}
 
 		return false;
+	}
+
+	// Enable / Disable Shadows
+	void Scene::ToggleShadows()
+	{
+		m_UseShadows = !m_UseShadows;
+	}
+
+	bool Scene::UseShadows() const
+	{
+		return m_UseShadows;
 	}
 
 #pragma region Scene Helpers
@@ -183,5 +195,36 @@ namespace dae {
 		AddPointLight(Vector3{ 0.f, 5.f, -5.f }, 70.f, colors::White); //Backlight
 	}
 
+#pragma endregion
+
+#pragma region SCENE_W3
+	void Scene_W3::Initialize()
+	{
+		m_Camera.origin = { 0.f, 1.f, -5.f };
+		m_Camera.fovAngle = 45.f;
+
+		//default: Material id0 >> SolidColor Material (RED)
+		constexpr unsigned char matId_Solid_Red = 0;
+		const unsigned char matId_Solid_Blue = AddMaterial(new Material_SolidColor{ colors::Blue });
+		const unsigned char matId_Solid_Yellow = AddMaterial(new Material_SolidColor{ colors::Yellow });
+
+		//Spheres
+		AddSphere({ -.75f, 1.f, .0f }, 1.f, matId_Solid_Red);
+		AddSphere({ .75f, 1.f, .0f }, 1.f, matId_Solid_Blue);
+
+		//Plane
+		AddPlane({ 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f }, matId_Solid_Yellow);
+
+		//Light
+		AddPointLight({ 0.f, 5.f, 5.f }, 25.f, colors::White);
+		//AddPointLight({ 0.f, 2.5f, -5.f }, 25.f, colors::White);
+
+	/*	m_Camera.origin = { 0.f, 1.f, -9.f };
+		m_Camera.fovAngle = 45.f;
+
+		const auto matCT_GrayRoughMetal = AddMaterial(new Material_CookTorrence({ 0.972f, 0.960f, 0.915f }, 1.f, 1.f));*/
+
+
+	}
 #pragma endregion
 }

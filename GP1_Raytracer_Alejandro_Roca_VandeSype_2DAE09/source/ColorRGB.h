@@ -9,6 +9,7 @@ namespace dae
 		float g{};
 		float b{};
 
+		// Take the biggest value and divide all the components by this value
 		void MaxToOne()
 		{
 			const float maxValue = std::max(r, std::max(g, b));
