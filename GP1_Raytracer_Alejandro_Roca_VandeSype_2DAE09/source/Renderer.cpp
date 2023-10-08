@@ -73,44 +73,50 @@ void Renderer::Render(Scene* pScene) const
 
 			// SHADING 
 			if (closestHit.didHit)
-			{
-				// If we hit something, set finalColor to material color, else keep black
-				// Use HitRecord::materialIndex to find the corresponding material
-				//finalColor = materials[closestHit.materialIndex]->Shade();
-
-				// Check if the pixel is shadowed
+			{			
 				for (size_t index{ 0 }; index < lights.size(); ++index)
 				{		
-					// Small offset to avoid self-shadowing
-					Vector3 originOffset{ closestHit.origin + (closestHit.normal * 0.001f) };
-
-					// Ray from the closestHit towards the light
-					Ray lightRay{ originOffset , LightUtils::GetDirectionToLight(lights[index], originOffset) };
-
-					// Max of the ligh ray will be its own magnitude
-					lightRay.max = lightRay.direction.Magnitude();
-					lightRay.direction = lightRay.direction.Normalized();
+					Vector3 lightDirection{ LightUtils::GetDirectionToLight(lights[index], closestHit.origin) };
 
 					// Measure the observed area with the Lambert's Cosine Law 
-					float viewAngle{ Vector3::Dot(closestHit.normal, lightRay.direction) };
-					if(viewAngle > 0) // If it is below 0 the point on the surface points away from the light ( It doesn't contribute for the finalColor)
-						finalColor += LightUtils::GetRadiance(lights[index], closestHit.origin) * viewAngle;
+					// If it is below 0 the point on the surface points away from the light ( It doesn't contribute for the finalColor)
+					const float viewAngle{ Vector3::Dot(closestHit.normal, lightDirection.Normalized()) };
+					if (viewAngle < 0)	
+						// Skip to the next light
+						continue;
 
 					if (m_ShadowsEnabled)
-					{				
+					{	
+						// Small offset to avoid self-shadowing
+						Vector3 originOffset{ closestHit.origin + (closestHit.normal * 0.001f) };
+
+						// Ray from the closestHit towards the light
+						Ray lightRay{ originOffset , Vector3{LightUtils::GetDirectionToLight(lights[index], originOffset)}};
+
+						// Max of the ligh ray will be its own magnitude
+						lightRay.max = lightRay.direction.Magnitude();
+						lightRay.direction = lightRay.direction.Normalized();
+
 						// Check if the ray hits
 						if (pScene->DoesHit(lightRay))
 						{
-							// Darken color
-							finalColor *= 0.5f;
-
+							// Shadowed -> Skitp next color
+							finalColor *= 0.8f;
+							continue;
 						}
 					}
+
+					const ColorRGB BRDF{ materials[closestHit.materialIndex]->Shade(closestHit, lightDirection.Normalized(), viewRay.direction)};
+					finalColor += LightUtils::GetRadiance(lights[index], closestHit.origin) * BRDF * viewAngle;
+					
+					
+					//finalColor += BRDF;			// BRDF ONLY
+					//finalColor += ColorRGB{viewAngle, viewAngle, viewAngle}; // ObservedArea Only
 				}
 			}
 
-			//Update Color in Buffer
-			finalColor.MaxToOne(); // Avoid color overflow and normalize the color
+			//Update Color in Buffer 
+			finalColor.MaxToOne(); // Clamp final color to prevent color overflow
 			m_pBufferPixels[px + (py * m_Width)] = SDL_MapRGB(m_pBuffer->format,
 				static_cast<uint8_t>(finalColor.r * 255),
 				static_cast<uint8_t>(finalColor.g * 255),

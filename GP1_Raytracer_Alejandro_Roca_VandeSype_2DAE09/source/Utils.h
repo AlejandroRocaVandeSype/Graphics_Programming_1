@@ -146,8 +146,11 @@ namespace dae
 
 		inline ColorRGB GetRadiance(const Light& light, const Vector3& target)
 		{
-			float distanceSquared = (light.origin - target).SqrMagnitude();
+			if (light.type == LightType::Directional)
+				return { light.color * light.intensity };
 
+			// If it is a point light we need to take into account the surface area 
+			float distanceSquared = (light.origin - target).SqrMagnitude();
 			return { light.color * (light.intensity / distanceSquared) };
 		}
 	}
