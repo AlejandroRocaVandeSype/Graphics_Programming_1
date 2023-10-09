@@ -82,9 +82,10 @@ namespace dae
 
 		ColorRGB Shade(const HitRecord& hitRecord = {}, const Vector3& l = {}, const Vector3& v = {}) override
 		{
-			//todo: W3
-			//assert(false && "Not Implemented Yet");
-			return {};
+			// BRDF linearity property -> Reflectivity based on multiple BRDF's
+			// All vectors need to point the same direction
+			return BRDF::Lambert(m_DiffuseReflectance, m_DiffuseColor) + BRDF::Phong(m_SpecularReflectance,
+				m_PhongExponent, l, v, hitRecord.normal);
 		}
 
 	private:

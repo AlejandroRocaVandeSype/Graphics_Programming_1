@@ -13,8 +13,8 @@ namespace dae
 		 */
 		static ColorRGB Lambert(float kd, const ColorRGB& cd)
 		{
-			ColorRGB reflectivity{ cd * kd };
-			return { reflectivity / dae::PI };
+			// Reflectivity ( cd * kd ) / PI == Lambert Diffuse Color
+			return { (cd * kd) / dae::PI };
 		}
 
 		static ColorRGB Lambert(const ColorRGB& kd, const ColorRGB& cd)
@@ -28,15 +28,23 @@ namespace dae
 		 * \param ks Specular Reflection Coefficient
 		 * \param exp Phong Exponent
 		 * \param l Incoming (incident) Light Direction
-		 * \param v View Direction
+		 * \param v View Direction 
 		 * \param n Normal of the Surface
 		 * \return Phong Specular Color
 		 */
 		static ColorRGB Phong(float ks, float exp, const Vector3& l, const Vector3& v, const Vector3& n)
 		{
-			//todo: W3
-			//assert(false && "Not Implemented Yet");
-			return {};
+
+			Vector3 reflect{ l - 2 * (Vector3::Dot(n, l)) * n };
+			reflect.Normalized();
+
+			float cosAngle{ Vector3::Dot(reflect, v) };
+
+			// Do a max to avoid negative values for the angle
+			float specularRefl{ std::max(0.f, ks * (pow(cosAngle, exp))) };
+			
+			// Phong specular reflection
+			return ColorRGB{ specularRefl, specularRefl , specularRefl };
 		}
 
 		/**

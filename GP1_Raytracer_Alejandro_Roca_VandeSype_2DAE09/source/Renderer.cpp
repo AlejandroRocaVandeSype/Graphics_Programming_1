@@ -76,6 +76,7 @@ void Renderer::Render(Scene* pScene) const
 			{			
 				for (size_t index{ 0 }; index < lights.size(); ++index)
 				{		
+					// Light direction ( From point to light)
 					Vector3 lightDirection{ LightUtils::GetDirectionToLight(lights[index], closestHit.origin) };
 
 					// Measure the observed area with the Lambert's Cosine Law 
