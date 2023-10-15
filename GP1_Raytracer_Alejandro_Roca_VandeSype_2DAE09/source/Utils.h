@@ -144,6 +144,7 @@ namespace dae
 			return light.origin - origin;
 		}
 
+		// How much light reaches a surface ?
 		inline ColorRGB GetRadiance(const Light& light, const Vector3& target)
 		{
 			if (light.type == LightType::Directional)

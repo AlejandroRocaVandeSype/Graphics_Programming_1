@@ -1,6 +1,7 @@
 #pragma once
 #include <cassert>
 #include "Math.h"
+#include <iostream>
 
 namespace dae
 {
@@ -35,16 +36,17 @@ namespace dae
 		static ColorRGB Phong(float ks, float exp, const Vector3& l, const Vector3& v, const Vector3& n)
 		{
 
-			Vector3 reflect{ l - 2 * (Vector3::Dot(n, l)) * n };
+			Vector3 reflect{ l - ( 2 * ( Vector3::Dot(n, l) ) * n ) };
 			reflect.Normalized();
 
-			float cosAngle{ Vector3::Dot(reflect, v) };
+			float cosAngle{ std::max(0.f, Vector3::Dot(reflect, v)) };
 
 			// Do a max to avoid negative values for the angle
-			float specularRefl{ std::max(0.f, ks * (pow(cosAngle, exp))) };
+			float specularRefl{ ks * (powf(cosAngle, exp)) };
 			
 			// Phong specular reflection
 			return ColorRGB{ specularRefl, specularRefl , specularRefl };
+
 		}
 
 		/**
@@ -56,9 +58,13 @@ namespace dae
 		 */
 		static ColorRGB FresnelFunction_Schlick(const Vector3& h, const Vector3& v, const ColorRGB& f0)
 		{
-			//todo: W3
-			//assert(false && "Not Implemented Yet");
-			return {};
+			
+
+			float result1{ 1 - (Vector3::Dot(h, v) ) };
+			float dotResult{ powf(result1, 5.f) };
+
+			return { ColorRGB{ f0.r + ( (1 - f0.r) * dotResult ) , f0.g + ( (1 - f0.g) * dotResult ) , f0.b + ( (1 - f0.b) * dotResult ) } };
+			
 		}
 
 		/**
@@ -70,8 +76,9 @@ namespace dae
 		 */
 		static float NormalDistribution_GGX(const Vector3& n, const Vector3& h, float roughness)
 		{
-			//todo: W3
-			//assert(false && "Not Implemented Yet");
+			float alpha{ (roughness * roughness) };
+			float alphaSquared{ alpha * alpha };
+			//return { alphaSquared / dae::PI * static_cast<float>( pow(( static_cast<float>(pow(Vector3::Dot(n, h), 2)) * (alphaSquared - 1) + 1 ), 2) ) };
 			return {};
 		}
 
@@ -85,8 +92,8 @@ namespace dae
 		 */
 		static float GeometryFunction_SchlickGGX(const Vector3& n, const Vector3& v, float roughness)
 		{
-			//todo: W3
-			//assert(false && "Not Implemented Yet");
+			float dotProduct{ Vector3::Dot(n, v) };
+			//return { dotProduct / dotProduct * ( 1 - roughness) + roughness };
 			return {};
 		}
 
@@ -100,8 +107,12 @@ namespace dae
 		 */
 		static float GeometryFunction_Smith(const Vector3& n, const Vector3& v, const Vector3& l, float roughness)
 		{
-			//todo: W3
-			//assert(false && "Not Implemented Yet");
+			// For direct lighting
+			float alpha{ roughness * roughness };
+			float k{ static_cast<float>((alpha + 1) * (alpha + 1) / 8) };
+
+			// To get correct approximation -> Use it for shadowing light and the masking light
+			//return GeometryFunction_SchlickGGX(n, v, k) * GeometryFunction_SchlickGGX(n, l, k);
 			return {};
 		}
 

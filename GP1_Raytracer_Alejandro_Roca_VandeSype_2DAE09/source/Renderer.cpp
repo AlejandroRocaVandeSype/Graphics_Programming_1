@@ -80,7 +80,7 @@ void Renderer::Render(Scene* pScene) const
 					Vector3 lightDirection{ LightUtils::GetDirectionToLight(lights[index], closestHit.origin) };
 
 					// Measure the observed area with the Lambert's Cosine Law 
-					// If it is below 0 the point on the surface points away from the light ( It doesn't contribute for the finalColor)
+					//// If it is below 0 the point on the surface points away from the light ( It doesn't contribute for the finalColor)
 					const float viewAngle{ Vector3::Dot(closestHit.normal, lightDirection.Normalized()) };
 					if (viewAngle < 0)	
 						// Skip to the next light
@@ -108,11 +108,14 @@ void Renderer::Render(Scene* pScene) const
 					}
 
 					const ColorRGB BRDF{ materials[closestHit.materialIndex]->Shade(closestHit, lightDirection.Normalized(), viewRay.direction)};
-					finalColor += LightUtils::GetRadiance(lights[index], closestHit.origin) * BRDF * viewAngle;
+					//finalColor += LightUtils::GetRadiance(lights[index], closestHit.origin) * BRDF * viewAngle;
 					
 					
 					//finalColor += BRDF;			// BRDF ONLY
-					//finalColor += ColorRGB{viewAngle, viewAngle, viewAngle}; // ObservedArea Only
+					//finalColor += ColorRGB{viewAngle, viewAngle, viewAngle}; // ObservedArea Only 
+					//finalColor += LightUtils::GetRadiance(lights[index], closestHit.origin); // Incident Radiance Only
+					//finalColor += LightUtils::GetRadiance(lights[index], closestHit.origin) * viewAngle;
+					finalColor += LightUtils::GetRadiance(lights[index], closestHit.origin) * BRDF * viewAngle;
 				}
 			}
 
