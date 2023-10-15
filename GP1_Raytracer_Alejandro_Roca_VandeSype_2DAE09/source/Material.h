@@ -123,14 +123,17 @@ namespace dae
 			Vector3 vectorAdd{ -v + l };
 			Vector3 halfVector{ vectorAdd / vectorAdd.Magnitude()};
 
-			//// Calculate Fresnel
+			////// Calculate Fresnel
 			ColorRGB fresnel{ BRDF::FresnelFunction_Schlick(halfVector, -v, f0)};
-			return fresnel;
+			//return fresnel;
 
-			//float normal{ BRDF::NormalDistribution_GGX(hitRecord.normal, halfVector, m_Roughness) };
-			//float geometry { BRDF::GeometryFunction_Smith(hitRecord.normal, v, l, m_Roughness) };
+			float normal{ BRDF::NormalDistribution_GGX(hitRecord.normal, halfVector, m_Roughness) };
+			return { normal, normal, normal };
+			//float geometry { BRDF::GeometryFunction_Smith(hitRecord.origin, -v, l, m_Roughness) };
 
-			//ColorRGB DFG{ normal * fresnel * geometry };
+			//std::cout << geometry << std::endl;
+
+			//ColorRGB DFG{ fresnel * normal };
 
 			//// Calculate specular
 			//ColorRGB cookTorrance{ DFG / 4 * ( Vector3::Dot(v, hitRecord.normal) * Vector3::Dot(l, hitRecord.normal)) };
@@ -146,7 +149,7 @@ namespace dae
 			//ColorRGB diffuse{ BRDF::Lambert(kd, m_Albedo) };
 
 			////return kd * diffuse + fresnel * cookTorrance;
-			///*return ColorRGB{geometry, geometry, geometry}; */
+			//return DFG; 
 
 		}
 
