@@ -123,33 +123,34 @@ namespace dae
 			Vector3 vectorAdd{ -v + l };
 			Vector3 halfVector{ vectorAdd / vectorAdd.Magnitude()};
 
-			////// Calculate Fresnel
+			// ** Calculate Fresnel **  -> How much light is reflected and refracted
 			ColorRGB fresnel{ BRDF::FresnelFunction_Schlick(halfVector, -v, f0)};
-			//return fresnel;
 
+			// ** Calculate Normal **  -> Determine how rough the material is
 			float normal{ BRDF::NormalDistribution_GGX(hitRecord.normal, halfVector, m_Roughness) };
-			return { normal, normal, normal };
-			//float geometry { BRDF::GeometryFunction_Smith(hitRecord.origin, -v, l, m_Roughness) };
 
-			//std::cout << geometry << std::endl;
+			// ** Calculate Geometry **  -> Shadowing (blocking incoming light ) and Masking 
+			// (blocking the scattered light)
+			float geometry { BRDF::GeometryFunction_Smith(hitRecord.normal, -v, l, m_Roughness) };
 
-			//ColorRGB DFG{ fresnel * normal };
+			// ** SPECULAR -> COOK-TORRANCE **
+			// (DFG) / 4 ( Dot(v,n) Dot(l,n) )
+			ColorRGB dfg{ normal * fresnel * geometry };
+			ColorRGB cookTorrance{ dfg / ( 4.f * Vector3::Dot(-v, hitRecord.normal) * Vector3::Dot(l, hitRecord.normal) ) };
 
-			//// Calculate specular
-			//ColorRGB cookTorrance{ DFG / 4 * ( Vector3::Dot(v, hitRecord.normal) * Vector3::Dot(l, hitRecord.normal)) };
+			// Determine Diffuse reflectance (kd)
+			// If not metal is the inverse of the fresnel
+			ColorRGB kd{ 1.f - fresnel.r,   1.f - fresnel.g,  1.f - fresnel.b };
+			if (m_Metalness != 0)
+			{
+				// If it is metal -> Cancel out 
+				kd.r = kd.g = kd.b = 0;
+			}
 
-			//// Diffuse reflectance
-			//ColorRGB kd{ 1 - fresnel.r,   1 - fresnel.g,  1 - fresnel.b };
-			//if (m_Metalness != 0)
-			//{
-			//	kd.r = kd.g = kd.b = 0;
-			//}
+			// Calculate Diffuse
+			ColorRGB diffuse{ BRDF::Lambert(kd, m_Albedo) };
 
-			//// Calculate Diffuse
-			//ColorRGB diffuse{ BRDF::Lambert(kd, m_Albedo) };
-
-			////return kd * diffuse + fresnel * cookTorrance;
-			//return DFG; 
+			return kd * diffuse + fresnel * cookTorrance;
 
 		}
 

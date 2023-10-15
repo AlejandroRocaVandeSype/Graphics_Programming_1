@@ -80,11 +80,9 @@ namespace dae
 			float alphaSquared = alpha * alpha;
 			float cosThetaH = Vector3::Dot(n, h);
 			float cosThetaHSquared = cosThetaH * cosThetaH;
-			float alphaPlus1{ alphaSquared - 1 };
 
-			float denominator{ cosThetaHSquared * alphaPlus1 + 1 };
-			denominator *= denominator;
-			denominator *= dae::PI;
+			float denominator{ cosThetaHSquared * (alphaSquared - 1 ) +1 };
+			denominator = powf(denominator, 2) * dae::PI;
 
 			return alphaSquared / denominator;
 		}
@@ -100,8 +98,9 @@ namespace dae
 		static float GeometryFunction_SchlickGGX(const Vector3& n, const Vector3& v, float roughness)
 		{
 			float dotProduct{ Vector3::Dot(n, v) };
+			float denominator{ ( dotProduct * (1 - roughness) ) + roughness };
 
-			return { dotProduct / (dotProduct * ( 1 - roughness)) + roughness };
+			return { dotProduct / denominator };
 		}
 
 		/**
@@ -116,7 +115,9 @@ namespace dae
 		{
 			// For direct lighting
 			float alpha{ roughness * roughness };
-			float k{ powf(alpha + 1, 2) / 8.f};
+			alpha += 1;
+			float numerator{ powf(alpha, 2) };
+			float k{ numerator / 8.f};
 
 			// To get correct approximation -> Use it for shadowing light and the masking light
 			return GeometryFunction_SchlickGGX(n, v, k) * GeometryFunction_SchlickGGX(n, l, k);
