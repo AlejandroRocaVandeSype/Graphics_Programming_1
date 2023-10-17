@@ -1,0 +1,275 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.5.json",
+  "runs": [
+    {
+      "results": [],
+      "tool": {
+        "driver": {
+          "name": "PREfast",
+          "fullName": "PREfast Code Analysis",
+          "version": "14.34.31942.0",
+          "informationUri": "https://aka.ms/cpp/ca"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "artifacts": [
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/source/scene.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ],
+          "hashes": {
+            "sha-256": "9d0f091f45fc9454efeccc369ebc4f167632fa052ab9a2f53a6f6a149e44eaf8"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/source/scene.h"
+          },
+          "hashes": {
+            "sha-256": "69cf167677598066870d914650e901fb016db54163875110457707f28df382d7"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/source/math.h"
+          },
+          "hashes": {
+            "sha-256": "7edac029d516572087dab218ef7c6d7b7927e2f9d454197f2f6a36e07fac9f47"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/source/vector3.h"
+          },
+          "hashes": {
+            "sha-256": "ed207da856cb5d73498757c1cfb584fbd2456521fabcbcfab498011a7f09e80a"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/source/vector4.h"
+          },
+          "hashes": {
+            "sha-256": "7ec56358ea13378e57d118bd898e0ce826e9a7b14f9c6e3f29fba4b68e0f8ec4"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/source/matrix.h"
+          },
+          "hashes": {
+            "sha-256": "cd34798d6e5b7d7d9c05448ec4c1f35c08966ada241c62e4e572e879b1e82d13"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/source/colorrgb.h"
+          },
+          "hashes": {
+            "sha-256": "713d45d99ed19c66e2a0081d61c38857c84a9078297f36c4f2fc1c129382e771"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/source/mathhelpers.h"
+          },
+          "hashes": {
+            "sha-256": "c261e2135ce4dfb64eabf7aaa5d4c26101d989107ea2c40fc65fa8ef550f0796"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/source/datatypes.h"
+          },
+          "hashes": {
+            "sha-256": "3d6e7faae9bc3c77a1886cf0fa2a68e26e8c9e6573b085eb2064de9ace8a3ab0"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/source/camera.h"
+          },
+          "hashes": {
+            "sha-256": "5eb54e0352190a397e2c779a5c72f21add805ff36cbd9511b9827ed7ff713fd5"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/include/sdl2-2.28.3/sdl_keyboard.h"
+          },
+          "hashes": {
+            "sha-256": "e27811a5097ae8cadb44655df1c1e884b5d218ad38a1310b020b9add5db065b8"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/include/sdl2-2.28.3/sdl_stdinc.h"
+          },
+          "hashes": {
+            "sha-256": "559e8ee6c5607971cd9000953f574c00265c8b67f59137089f4b60e4104e83d5"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/include/sdl2-2.28.3/sdl_config.h"
+          },
+          "hashes": {
+            "sha-256": "4860c759233673e2204c958ead4fb177be6a97cfcff1f1873975e1ef0a7f5059"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/include/sdl2-2.28.3/sdl_platform.h"
+          },
+          "hashes": {
+            "sha-256": "ca34f28f985b2cc3ecef79c64bdd0a2ecd63447c3ea96029d27713af9eadcc15"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/include/sdl2-2.28.3/begin_code.h"
+          },
+          "hashes": {
+            "sha-256": "9598e70462ae4224aea70b66de465396220c30f94756652c55346d43b13458c5"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/include/sdl2-2.28.3/close_code.h"
+          },
+          "hashes": {
+            "sha-256": "ff1f06c5cd46688a338973b3fec79b23b7743f2b438845a2f245997e3929d16c"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/include/sdl2-2.28.3/sdl_error.h"
+          },
+          "hashes": {
+            "sha-256": "b08e32c8ed3ab514819efe7614385af4096b975658a1c6cf86a6ba03b05f277c"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/include/sdl2-2.28.3/sdl_keycode.h"
+          },
+          "hashes": {
+            "sha-256": "e329a891418ab5c513ea474edc4bb244937f9b0995a3312900b716c1b7ae9054"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/include/sdl2-2.28.3/sdl_scancode.h"
+          },
+          "hashes": {
+            "sha-256": "afb9eacdc2b217c297613e5825ce66be11e7140285072c5e3fb77db8daee7d83"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/include/sdl2-2.28.3/sdl_video.h"
+          },
+          "hashes": {
+            "sha-256": "7a7de3a010604485f63d664a65fbe238ff7cdb12290ddf0bd137fb86e2813544"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/include/sdl2-2.28.3/sdl_pixels.h"
+          },
+          "hashes": {
+            "sha-256": "f7a1155cf3e2c1df7530b127f78de7a013490d2e0182589508686bf9322679bb"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/include/sdl2-2.28.3/sdl_endian.h"
+          },
+          "hashes": {
+            "sha-256": "4eaa424d2bc0b7c4a139d65ecaaa78dce63d207610b96aec0613b6d7dd2dd3ba"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/include/sdl2-2.28.3/sdl_rect.h"
+          },
+          "hashes": {
+            "sha-256": "39876f360f0627e1d4ece14dbe0610b13e62cf2164766470f2c9047813d1e983"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/include/sdl2-2.28.3/sdl_rwops.h"
+          },
+          "hashes": {
+            "sha-256": "02376362bfb2ea8c7da6d751bc876195231e21fb9f2fa4cd00c989ef17df27b4"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/include/sdl2-2.28.3/sdl_surface.h"
+          },
+          "hashes": {
+            "sha-256": "10efa8b66f6c64e871bc58c8197c5e01c9d667d4b3d2317a62c219c666663170"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/include/sdl2-2.28.3/sdl_blendmode.h"
+          },
+          "hashes": {
+            "sha-256": "64521ecb86cb380259803dd54ed09783e3a5bfcf5ed3cb45ff0681093e079664"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/include/sdl2-2.28.3/sdl_mouse.h"
+          },
+          "hashes": {
+            "sha-256": "479c3d0da3602b0fb3e80024fdad8ac1f95bb42069a5fd2521d392d8ee3dd7ca"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/source/timer.h"
+          },
+          "hashes": {
+            "sha-256": "2b26baa9028afba349815973f4bd49da8c8e6d453e80613de218ab8a242a90aa"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/source/utils.h"
+          },
+          "hashes": {
+            "sha-256": "6647e62206e3585da4f508e95ecbc9048fe1064bc0f476ffc27729b7b706dad7"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/source/material.h"
+          },
+          "hashes": {
+            "sha-256": "8fb86e98104dee480a9435ac7f8e435c41e6a071130df80132fa068452d33ab9"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/studies/studies/dae/2º year/graphics programming 1/lab/graphics-programming-1/gp1_raytracer_alejandro_roca_vandesype_2dae09/source/brdfs.h"
+          },
+          "hashes": {
+            "sha-256": "50e7a43795e869290d4328b53c0993b4c09d3ee6028ddaa5f0543ce6d2ff4ac2"
+          }
+        }
+      ]
+    }
+  ]
+}

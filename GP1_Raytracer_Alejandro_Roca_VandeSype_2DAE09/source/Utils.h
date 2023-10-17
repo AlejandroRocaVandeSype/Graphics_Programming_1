@@ -73,9 +73,9 @@ namespace dae
 			float t{ Vector3::Dot(toOrigin, plane.normal) / Vector3::Dot(ray.direction, plane.normal) };
 			if (t > ray.min && t < ray.max)
 			{
+				// t inside [tMin, tMax] from the ray
 				if (ignoreHitRecord == false)
-				{
-					// t inside [tMin, tMax] from the ray
+				{				
 					if (hitRecord.t >= t)
 					{
 						// Calculate the intersection point 
@@ -103,9 +103,96 @@ namespace dae
 		//TRIANGLE HIT-TESTS
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			//todo W5
-			assert(false && "No Implemented Yet!");
-			return false;
+			
+			// 1º Check if the ray hit the triangle plane
+			//..... Calculate normal with triangle edges 
+			Vector3 triangleNormal{ Vector3::Cross((triangle.v1 - triangle.v0), (triangle.v2 - triangle.v0)).Normalized() };
+			
+			float angleNormalRay{ Vector3::Dot(triangleNormal, ray.direction) };
+			if (AreEqual(angleNormalRay, 0.f))
+				return false;	// If 0 means the ray is perpendicular to the normal so we dont actually see the triangle
+
+			if (triangle.cullMode == TriangleCullMode::BackFaceCulling)
+			{
+				if (!ignoreHitRecord)
+				{
+					if (angleNormalRay > 0.f)
+						return false;	// Viewing from the front ( Not hitting )
+				}
+				else
+				{
+					// If calculating shadows we use the opposite cullMode
+					if (angleNormalRay < 0.f)
+						return false;	
+				}
+			}
+			if (triangle.cullMode == TriangleCullMode::FrontFaceCulling)
+			{
+
+				if (!ignoreHitRecord)
+				{
+					if (angleNormalRay < 0.f)
+						return false;	// Viewing from the back ( Not hitting )
+				}
+				else
+				{
+					// If calculating shadows we use the opposite cullMode
+					if (angleNormalRay > 0.f)
+						return false;
+				}
+			}
+
+			// 2º Where does the ray hit the plane ? 
+			Vector3 toPlane{ triangle.v0 - ray.origin };
+
+			//.... Calculate the distance of the vector ( t )
+			float t{ ( Vector3::Dot(toPlane, triangleNormal) ) / ( Vector3::Dot(ray.direction, triangleNormal) ) };
+
+			// .... Check if t within range
+			if (t < ray.min || t > ray.max)
+				return false;	// Not in range
+
+			//.... In range -> Calculate where does intersect
+			Vector3 intersectPoint{ ray.origin + (ray.direction * t) };
+
+
+			// 3º Intersection point inside the triangle? 
+			//.... Check for every edge from the triangle if the point is on the right side
+			Vector3 edge{};
+			Vector3 toPoint{};		// Used to determine if intersect point in the right side of triangle
+
+			// Doing this instead of vector is more optimal
+			edge = triangle.v1 - triangle.v0;
+			toPoint = intersectPoint - triangle.v0;
+			if ((Vector3::Dot(Vector3::Cross(edge, toPoint), triangleNormal)) < 0)
+				return false;
+
+			edge = triangle.v2 - triangle.v1;
+			toPoint = intersectPoint - triangle.v1;
+			if ((Vector3::Dot(Vector3::Cross(edge, toPoint), triangleNormal)) < 0)
+				return false;
+
+			edge = triangle.v0 - triangle.v2;
+			toPoint = intersectPoint - triangle.v2;
+			if ((Vector3::Dot(Vector3::Cross(edge, toPoint), triangleNormal)) < 0)
+				return false;
+
+				
+			// If here means that intersectPoint is in the right side of the triangle 
+			if (ignoreHitRecord == false)
+			{
+				if (hitRecord.t >= t)
+				{
+					hitRecord.origin = intersectPoint;
+					hitRecord.normal = triangleNormal;
+					hitRecord.t = t;
+					hitRecord.didHit = true;
+					hitRecord.materialIndex = triangle.materialIndex;
+				}
+			}
+
+
+			return true;
 		}
 
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray)
