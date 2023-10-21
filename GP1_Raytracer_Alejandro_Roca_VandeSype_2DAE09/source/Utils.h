@@ -205,8 +205,21 @@ namespace dae
 		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			//todo W5
-			assert(false && "No Implemented Yet!");
-			return false;
+			bool didHit{ false };
+			for (size_t index{ 0 }; index < mesh.indices.size(); index += 3)
+			{
+				// V0 , V1 , V2 and normal
+				Triangle triangle{ mesh.transformedPositions[mesh.indices[index]], mesh.transformedPositions[mesh.indices[index + 1]],
+				mesh.transformedPositions[mesh.indices[index + 2]],  mesh.transformedNormals[index / 3] };
+				triangle.cullMode = mesh.cullMode;
+				triangle.materialIndex = mesh.materialIndex;
+
+				didHit = HitTest_Triangle(triangle, ray, hitRecord, ignoreHitRecord);		
+				if (ignoreHitRecord)
+					return didHit; // Return the first hit
+			}
+
+			return didHit;
 		}
 
 		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray)

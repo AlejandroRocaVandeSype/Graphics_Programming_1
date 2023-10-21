@@ -55,7 +55,7 @@ namespace dae
 		std::vector<Light> m_Lights{};
 		std::vector<Material*> m_Materials{};
 
-		// Temp (Individual Triangle Testing )
+		//// Temp (Individual Triangle Testing )
 		std::vector<Triangle> m_Triangles{};
 
 		Camera m_Camera{};

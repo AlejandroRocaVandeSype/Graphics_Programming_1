@@ -41,10 +41,10 @@ namespace dae {
 			GeometryUtils::HitTest_Plane(plane, ray, closestHit);
 		}
 
-		// .... all triangles
-		for (const auto& triangle : m_Triangles)
+		// .... all triangles meshes
+		for (const auto& triangleMesh : m_TriangleMeshGeometries)
 		{
-			GeometryUtils::HitTest_Triangle(triangle, ray, closestHit);
+			GeometryUtils::HitTest_TriangleMesh(triangleMesh, ray, closestHit);
 		}
 
 	}
@@ -66,10 +66,10 @@ namespace dae {
 				return true;
 		}
 
-		//.... all triangles
-		for (const auto& triangle : m_Triangles)
+		//.... all triangles meshes
+		for (const auto& triangleMesh : m_TriangleMeshGeometries)
 		{
-			if (GeometryUtils::HitTest_Triangle(triangle, ray))
+			if (GeometryUtils::HitTest_TriangleMesh(triangleMesh, ray))
 				return true;
 		}
 
@@ -299,30 +299,30 @@ namespace dae {
 
 		////Triangle (Temp)
 		////===============
-		auto triangle = Triangle{ {-.75f,.5f,.0f},{-.75f,2.f, .0f}, {.75f,.5f,0.f} };
+	/*	auto triangle = Triangle{ {-.75f,.5f,.0f},{-.75f,2.f, .0f}, {.75f,.5f,0.f} };
 		triangle.cullMode = TriangleCullMode::NoCulling;
 		triangle.materialIndex = matLambert_White;
 
-		m_Triangles.emplace_back(triangle);
+		m_Triangles.emplace_back(triangle);*/
 
 		//Triangle Mesh
 		//=============
-		//pMesh = AddTriangleMesh(TriangleCullMode::NoCulling, matLambert_White);
-		//pMesh->positions = {
-		//	{-.75f,-1.f,.0f},  //V0
-		//	{-.75f,1.f, .0f},  //V2
-		//	{.75f,1.f,1.f},    //V3
-		//	{.75f,-1.f,0.f} }; //V4
+		const auto pMesh = AddTriangleMesh(TriangleCullMode::NoCulling, matLambert_White);
+		pMesh->positions = {
+			{-.75f,-1.f,.0f},  //V0
+			{-.75f,1.f, .0f},  //V2
+			{.75f,1.f,1.f},    //V3
+			{.75f,-1.f,0.f} }; //V4
 
-		//pMesh->indices = {
-		//	0,1,2, //Triangle 1
-		//	0,2,3  //Triangle 2
-		//};
+		pMesh->indices = {
+			0,1,2, //Triangle 1
+			0,2,3  //Triangle 2
+		};
 
-		//pMesh->CalculateNormals();
+		pMesh->CalculateNormals();
 
 		//pMesh->Translate({ 0.f,1.5f,0.f });
-		//pMesh->UpdateTransforms();
+		pMesh->UpdateTransforms();
 
 		////OBJ
 		////===

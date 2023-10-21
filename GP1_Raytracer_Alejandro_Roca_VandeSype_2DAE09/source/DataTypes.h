@@ -122,21 +122,34 @@ namespace dae
 		}
 
 		void CalculateNormals()
-		{
-			assert(false && "No Implemented Yet!");
+		{	
+			// Each set of 3 indices represent a triangle
+			for (size_t index{ 0 }; index < indices.size(); index += 3)
+			{
+				// Calculate two edges for the triangle
+				// ..... V1 - V0
+				Vector3 edge1{ positions[indices[index + 1]] - positions[indices[index]] };
+				// ..... V2 - V0
+				Vector3 edge2{ positions[indices[index + 2]] - positions[indices[index]] };
+
+				// Calculate the normal using cross product
+				normals.emplace_back(Vector3::Cross(edge1, edge2).Normalized());
+			}
 		}
 
 		void UpdateTransforms()
 		{
-			assert(false && "No Implemented Yet!");
+			
 			//Calculate Final Transform 
 			//const auto finalTransform = ...
 
 			//Transform Positions (positions > transformedPositions)
 			//...
+			transformedPositions = positions;
 
 			//Transform Normals (normals > transformedNormals)
 			//...
+			transformedNormals = normals;
 		}
 	};
 #pragma endregion
