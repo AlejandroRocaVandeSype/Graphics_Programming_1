@@ -93,7 +93,7 @@ namespace dae
 		}
 
 		void RotateY(float yaw)
-		{
+		{		
 			rotationTransform = Matrix::CreateRotationY(yaw);
 		}
 
@@ -141,15 +141,25 @@ namespace dae
 		{
 			
 			//Calculate Final Transform 
-			//const auto finalTransform = ...
+			//... left-hand system -> SRT ( NOT TRS )
+			const auto finalTransform{ scaleTransform * rotationTransform * translationTransform };
 
 			//Transform Positions (positions > transformedPositions)
 			//...
-			transformedPositions = positions;
-
+			transformedPositions.clear();
+			transformedPositions.reserve(positions.size());
+			for (const auto& position : positions)
+			{
+				transformedPositions.emplace_back(finalTransform.TransformPoint(position));
+			}
 			//Transform Normals (normals > transformedNormals)
 			//...
-			transformedNormals = normals;
+			transformedNormals.clear();
+			transformedNormals.reserve(normals.size());
+			for (const auto& normal : normals)
+			{
+				transformedNormals.emplace_back(finalTransform.TransformVector(normal));
+			}
 		}
 	};
 #pragma endregion
