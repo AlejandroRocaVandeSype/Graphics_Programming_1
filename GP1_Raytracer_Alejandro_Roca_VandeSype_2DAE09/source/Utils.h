@@ -191,7 +191,6 @@ namespace dae
 				}
 			}
 
-
 			return true;
 		}
 
@@ -215,7 +214,7 @@ namespace dae
 				triangle.materialIndex = mesh.materialIndex;
 
 				didHit = HitTest_Triangle(triangle, ray, hitRecord, ignoreHitRecord);		
-				if (ignoreHitRecord)
+				if (ignoreHitRecord && didHit == true)
 					return didHit; // Return the first hit
 			}
 
