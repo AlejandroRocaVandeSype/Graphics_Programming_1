@@ -5,9 +5,12 @@
 struct SDL_Window;
 struct SDL_Surface;
 
+
 namespace dae
 {
 	class Scene;
+	struct Matrix;
+	struct Vector3;
 
 	class Renderer final
 	{
@@ -21,6 +24,7 @@ namespace dae
 		Renderer& operator=(Renderer&&) noexcept = delete;
 
 		void Render(Scene* pScene) const;
+		void RenderPixel(Scene* pScene, uint32_t pixelIndex, const float fov, float aspectRatio, const Matrix& cameraToWorld, const Vector3& cameraOrigin) const;	  // Process each pixel
 		bool SaveBufferToImage() const;
 
 		// LIGHTING

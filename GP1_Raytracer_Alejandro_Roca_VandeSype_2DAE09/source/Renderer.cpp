@@ -9,7 +9,9 @@
 #include "Material.h"
 #include "Scene.h"
 #include "Utils.h"
-#include <iostream>
+
+#define PARALLEL_EXECUTION
+#include <execution>	 // For multithread ( Parallel execution )
 
 using namespace dae;
 
@@ -46,6 +48,23 @@ void Renderer::Render(Scene* pScene) const
 	// instead of every frame )
 	const float FOV{ tan( (camera.fovAngle * TO_RADIANS) / 2) };
 	
+
+#ifdef PARALLEL_EXECUTION
+	// Parallel logic
+	uint32_t amountOfPixels{ static_cast<uint32_t>(m_Width * m_Height) };
+	std::vector<uint32_t> pixelIndices{};
+	pixelIndices.reserve(amountOfPixels);
+
+	for (uint32_t index{}; index < amountOfPixels; ++index)
+		pixelIndices.emplace_back(index);
+
+	// Execute renderPixel for each pixel
+	std::for_each(std::execution::par, pixelIndices.begin(), pixelIndices.end(),
+		[&](int i)
+		{ RenderPixel(pScene, i, FOV, aspectRatio, cameraToWorld, camera.origin); } );
+
+#else // Synchronous logic (no multithreading)
+
 	for (int px{}; px < m_Width; ++px)
 	{
 		for (int py{}; py < m_Height; ++py)
@@ -105,8 +124,7 @@ void Renderer::Render(Scene* pScene) const
 						// Check if the ray hits
 						if (pScene->DoesHit(lightRay))
 						{
-							// Shadowed -> Skitp next color
-							finalColor *= 0.8f;
+							// Shadowed -> Skip next color
 							continue;
 						}
 					}
@@ -143,10 +161,116 @@ void Renderer::Render(Scene* pScene) const
 				static_cast<uint8_t>(finalColor.b * 255));
 		}
 	}
+#endif // PARALLEL_EXECUTION
 
 	//@END
 	//Update SDL Surface
 	SDL_UpdateWindowSurface(m_pWindow);
+}
+
+
+void Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, const float fov, float aspectRatio, const Matrix& cameraToWorld, const Vector3& cameraOrigin) const
+{
+	std::vector<dae::Material*> materials{ pScene->GetMaterials() };
+
+	const uint32_t px{ pixelIndex % m_Width };
+	const uint32_t py{ pixelIndex / m_Width };
+
+	// To get the center of the pixel
+	const float halfPixelSize{ 0.5f };
+
+	// For each pixel
+			//... Ray calculation ( Take aspect ratio and FOV into account )
+	Vector3 rayDirection{};
+	rayDirection.x = (2.f * ((static_cast<float>(px) + halfPixelSize) / static_cast<float>(m_Width)) - 1.f) * aspectRatio * fov;
+	rayDirection.y = (1.f - 2.f * (static_cast<float>(py) + halfPixelSize) / static_cast<float>(m_Height)) * fov;
+	rayDirection.z = 1.f;
+
+	// Transform this ray direction using the Camera ONB matrix, so we take into account 
+	// the camera rotation / position
+	rayDirection = cameraToWorld.TransformVector(rayDirection).Normalized();
+
+	// Ray we are casting from the camera towards each pixel
+	Ray viewRay{ cameraOrigin , rayDirection };
+
+	// Color to write to the color buffer ( default = black)
+	ColorRGB finalColor{};
+
+	// HitRecord containing more info about potential hit
+	HitRecord closestHit{};
+	pScene->GetClosestHit(viewRay, closestHit);
+
+
+	// SHADING 
+	if (closestHit.didHit)
+	{
+		for (size_t index{ 0 }; index < pScene->GetLights().size(); ++index)
+		{
+			// Light direction ( From point to light)
+			Vector3 lightDirection{ LightUtils::GetDirectionToLight(pScene->GetLights()[index], closestHit.origin) };
+
+			// ** LAMBERT'S COSINE LAW ** -> Measure the OBSERVED AREA
+			const float viewAngle{ Vector3::Dot(closestHit.normal, lightDirection.Normalized()) };
+			if (viewAngle < 0 && m_CurrentLightingMode != LightingMode::Radiance)
+			{
+				// If it is below 0 the point on the surface points away from the light
+				// ( It doesn't contribute for the finalColor)
+				// Skip to the next light
+				continue;
+			}
+
+			// ** SHADOWS ** 
+			if (m_ShadowsEnabled)
+			{
+				// Small offset to avoid self-shadowing
+				Vector3 originOffset{ closestHit.origin + (closestHit.normal * 0.001f) };
+
+				// Ray from the closestHit towards the light
+				Ray lightRay{ originOffset , Vector3{LightUtils::GetDirectionToLight(pScene->GetLights()[index], originOffset)} };
+
+				// Max of the ligh ray will be its own magnitude
+				lightRay.max = lightRay.direction.Magnitude();
+				lightRay.direction = lightRay.direction.Normalized();
+
+				// Check if the ray hits
+				if (pScene->DoesHit(lightRay))
+				{
+					// Shadowed -> Skip next color
+					continue;
+				}
+			}
+
+			// ** LIGHT SCATTERING ** based on the material from the objects from the scene
+			const ColorRGB BRDF{ materials[closestHit.materialIndex]->Shade(closestHit, lightDirection.Normalized(), viewRay.direction) };
+
+			// ** LIGHTING EQUATION **
+			// FinalColor calculated based on the current Lighting Mode
+			switch (m_CurrentLightingMode)
+			{
+			case dae::Renderer::LightingMode::ObservedArea:
+				finalColor += ColorRGB{ viewAngle, viewAngle, viewAngle }; // ObservedArea Only 
+				break;
+			case dae::Renderer::LightingMode::Radiance:
+				finalColor += LightUtils::GetRadiance(pScene->GetLights()[index], closestHit.origin); // Incident Radiance Only
+				break;
+			case dae::Renderer::LightingMode::BRDF:
+				finalColor += BRDF;			// BRDF ONLY
+				break;
+			case dae::Renderer::LightingMode::Combined:
+				finalColor += LightUtils::GetRadiance(pScene->GetLights()[index], closestHit.origin) * BRDF * viewAngle;
+				break;
+			}
+
+		}
+	}
+
+	//Update Color in Buffer 
+	finalColor.MaxToOne(); // Clamp final color to prevent color overflow
+	m_pBufferPixels[px + (py * m_Width)] = SDL_MapRGB(m_pBuffer->format,
+		static_cast<uint8_t>(finalColor.r * 255),
+		static_cast<uint8_t>(finalColor.g * 255),
+		static_cast<uint8_t>(finalColor.b * 255));
+
 }
 
 bool Renderer::SaveBufferToImage() const
