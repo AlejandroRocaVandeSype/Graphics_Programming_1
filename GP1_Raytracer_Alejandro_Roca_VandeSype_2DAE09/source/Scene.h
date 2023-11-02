@@ -150,6 +150,7 @@ namespace dae
 		void Update(Timer* pTimer) override;
 	private:
 		TriangleMesh* m_Meshes[3]{ nullptr };
+		float m_YawAngle{};
 	};
 	
 

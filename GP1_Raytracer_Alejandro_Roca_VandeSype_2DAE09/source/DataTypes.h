@@ -84,6 +84,13 @@ namespace dae
 		Matrix translationTransform{};
 		Matrix scaleTransform{};
 
+		// AABB-Ray Intersection optimiz
+		Vector3 minAABB;
+		Vector3 maxAABB;
+
+		Vector3 transformedMinAABB;
+		Vector3 transformedMaxAABB;
+
 		std::vector<Vector3> transformedPositions{};
 		std::vector<Vector3> transformedNormals{};
 
@@ -139,7 +146,6 @@ namespace dae
 
 		void UpdateTransforms()
 		{
-			
 			//Calculate Final Transform 
 			//... left-hand system -> SRT ( NOT TRS )
 			const auto finalTransform{ scaleTransform * rotationTransform * translationTransform };
@@ -152,6 +158,10 @@ namespace dae
 			{
 				transformedPositions.emplace_back(finalTransform.TransformPoint(position));
 			}
+
+			// Update AABB
+			UpdateTransformedAABB(finalTransform);
+
 			//Transform Normals (normals > transformedNormals)
 			//...
 			transformedNormals.clear();
@@ -161,6 +171,73 @@ namespace dae
 				transformedNormals.emplace_back(finalTransform.TransformVector(normal));
 			}
 		}
+
+		// AABB-Ray Intersection optimiz
+
+		// Calculate the object-space AABB
+		void UpdateAABB()
+		{
+			// Update the AABB logic
+			if (positions.size() > 0)
+			{
+				// Min and max will be the 0 position at start
+				minAABB = positions[0];
+				maxAABB = positions[0];
+				for (const auto& position : positions)
+				{
+					minAABB = Vector3::Min(position, minAABB);
+					maxAABB = Vector3::Max(position, maxAABB);
+				}
+			}
+		}
+
+		// Calculate the world-space AABB
+		void UpdateTransformedAABB(const Matrix& finalTransform)
+		{
+			// AABB update : Be careful -> transform the 8 vertices of the aabb
+			// and calculate new min and max
+			Vector3 tMinAABB{ finalTransform.TransformPoint(minAABB) };
+			Vector3 tMaxAABB{ tMinAABB };
+			
+			// (xmax, ymin, zmin)
+			Vector3 tAABB{ finalTransform.TransformPoint(maxAABB.x, minAABB.y, minAABB.z) };
+			tMinAABB = Vector3::Min(tAABB, tMinAABB);
+			tMaxAABB = Vector3::Max(tAABB, tMaxAABB);
+
+			//(xmax, ymin, zmax)
+			tAABB = finalTransform.TransformPoint(maxAABB.x, minAABB.y, maxAABB.z);
+			tMinAABB = Vector3::Min(tAABB, tMinAABB);
+			tMaxAABB = Vector3::Max(tAABB, tMaxAABB);
+
+			//(xmin, ymin, zmax)
+			tAABB = finalTransform.TransformPoint(minAABB.x, minAABB.y, maxAABB.z);
+			tMinAABB = Vector3::Min(tAABB, tMinAABB);
+			tMaxAABB = Vector3::Max(tAABB, tMaxAABB);
+
+			//(xmin, ymax, zmin)
+			tAABB = finalTransform.TransformPoint(minAABB.x, maxAABB.y, minAABB.z);
+			tMinAABB = Vector3::Min(tAABB, tMinAABB);
+			tMaxAABB = Vector3::Max(tAABB, tMaxAABB);
+
+			//(xmax, ymax, zmin)
+			tAABB = finalTransform.TransformPoint(maxAABB.x, maxAABB.y, minAABB.z);
+			tMinAABB = Vector3::Min(tAABB, tMinAABB);
+			tMaxAABB = Vector3::Max(tAABB, tMaxAABB);
+
+			// (xmax, ymax, zmax)
+			tAABB = finalTransform.TransformPoint(maxAABB);
+			tMinAABB = Vector3::Min(tAABB, tMinAABB);
+			tMaxAABB = Vector3::Max(tAABB, tMaxAABB);
+
+			// (xmin, ymax, zmax)
+			tAABB = finalTransform.TransformPoint(minAABB.x, maxAABB.y, minAABB.z);
+			tMinAABB = Vector3::Min(tAABB, tMinAABB);
+			tMaxAABB = Vector3::Max(tAABB, tMaxAABB);
+
+			transformedMinAABB = tMinAABB;
+			transformedMaxAABB = tMaxAABB;
+		}
+
 	};
 #pragma endregion
 #pragma region LIGHT

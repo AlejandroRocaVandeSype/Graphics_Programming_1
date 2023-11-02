@@ -51,9 +51,6 @@ int main(int argc, char* args[])
 	//Start loop
 	pTimer->Start();
 
-	// Start Benchmark
-	// pTimer->StartBenchmark();
-
 	float printTimer = 0.f;
 	bool isLooping = true;
 	bool takeScreenshot = false;
@@ -76,6 +73,8 @@ int main(int argc, char* args[])
 						pRenderer->ToggleShadows();
 					if (e.key.keysym.scancode == SDL_SCANCODE_F3)
 						pRenderer->CycleLightingMode();
+					if(e.key.keysym.scancode == SDL_SCANCODE_F6)
+						pTimer->StartBenchmark(); 		// Start Benchmark
 					break;
 				}
 			}
