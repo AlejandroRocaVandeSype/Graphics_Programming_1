@@ -126,20 +126,21 @@ namespace dae
 			// ** Calculate Fresnel **  -> How much light is reflected and refracted
 			ColorRGB fresnel{ BRDF::FresnelFunction_Schlick(halfVector, -v, f0)};
 
-			// ** Calculate Normal **  -> Determine how rough the material is
+			//// ** Calculate Normal **  -> Determine how rough the material is
 			float normal{ BRDF::NormalDistribution_GGX(hitRecord.normal, halfVector, m_Roughness) };
 
-			// ** Calculate Geometry **  -> Shadowing (blocking incoming light ) and Masking 
-			// (blocking the scattered light)
-			float geometry { BRDF::GeometryFunction_Smith(hitRecord.normal, -v, l, m_Roughness) };
+			//// ** Calculate Geometry **  -> Shadowing (blocking incoming light ) and Masking 
+			//// (blocking the scattered light)
+			float geometry { BRDF::GeometryFunction_Smith(hitRecord.normal, -v, l, m_Roughness)};
 
-			// ** SPECULAR -> COOK-TORRANCE **
-			// (DFG) / 4 ( Dot(v,n) Dot(l,n) )
+			//return { geometry, geometry, geometry };
+			//// ** SPECULAR -> COOK-TORRANCE **
+			//// (DFG) / 4 ( Dot(v,n) Dot(l,n) )
 			ColorRGB dfg{ normal * fresnel * geometry };
 			ColorRGB cookTorrance{ dfg / ( 4.f * Vector3::Dot(-v, hitRecord.normal) * Vector3::Dot(l, hitRecord.normal) ) };
 
-			// Determine Diffuse reflectance (kd)
-			// If not metal is the inverse of the fresnel
+			//// Determine Diffuse reflectance (kd)
+			//// If not metal is the inverse of the fresnel
 			ColorRGB kd{ 1.f - fresnel.r,   1.f - fresnel.g,  1.f - fresnel.b };
 			if (m_Metalness != 0)
 			{
@@ -147,10 +148,11 @@ namespace dae
 				kd.r = kd.g = kd.b = 0;
 			}
 
-			// Calculate Diffuse
+			//// Calculate Diffuse
 			ColorRGB diffuse{ BRDF::Lambert(kd, m_Albedo) };
+			//return diffuse;
 
-			return kd * diffuse + fresnel * cookTorrance;
+			return (kd * diffuse) + (fresnel * cookTorrance);
 
 		}
 

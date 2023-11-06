@@ -119,7 +119,8 @@ void Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, const float fov, 
 
 			// ** LAMBERT'S COSINE LAW ** -> Measure the OBSERVED AREA
 			const float viewAngle{ Vector3::Dot(closestHit.normal, lightDirection.Normalized()) };
-			if (viewAngle < 0 && m_CurrentLightingMode != LightingMode::Radiance)
+			if (viewAngle < 0 && m_CurrentLightingMode != LightingMode::Radiance
+				&& m_CurrentLightingMode != LightingMode::BRDF)
 			{
 				// If it is below 0 the point on the surface points away from the light
 				// ( It doesn't contribute for the finalColor)
@@ -151,8 +152,9 @@ void Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, const float fov, 
 			// ** LIGHT SCATTERING ** based on the material from the objects from the scene
 			const ColorRGB BRDF{ materials[closestHit.materialIndex]->Shade(closestHit, lightDirection.Normalized(), viewRay.direction) };
 
+			//finalColor += BRDF;			// BRDF ONLY
 			// ** LIGHTING EQUATION **
-			// FinalColor calculated based on the current Lighting Mode
+			 //FinalColor calculated based on the current Lighting Mode
 			switch (m_CurrentLightingMode)
 			{
 			case dae::Renderer::LightingMode::ObservedArea:

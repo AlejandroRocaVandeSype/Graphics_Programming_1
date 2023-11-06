@@ -97,7 +97,7 @@ namespace dae
 		 */
 		static float GeometryFunction_SchlickGGX(const Vector3& n, const Vector3& v, float roughness)
 		{
-			float dotProduct{ Vector3::Dot(n, v) };
+			float dotProduct{ std::max(0.f,Vector3::Dot(n, v)) };
 			float denominator{ ( dotProduct * (1 - roughness) ) + roughness };
 
 			return { dotProduct / denominator };
