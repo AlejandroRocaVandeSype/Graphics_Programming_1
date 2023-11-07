@@ -8,6 +8,40 @@
 
 namespace dae
 {
+	namespace GeometryUtils
+	{
+#pragma region Triangle HitTest
+		//TRIANGLE HIT-TESTS
+		inline bool PixelTest_Triangle(const Vector3& pixel, const Vector3& v0, const Vector3& v1, const Vector3& v2)
+		{
+			//..... Calculate normal with triangle edges 
+			Vector3 triangleNormal{ Vector3::Cross((v1 - v0), (v2 - v0)).Normalized() };
+
+			// Pixel inside the triangle? 
+			//.... Check for every edge from the triangle if the point is on the right side
+			Vector3 edge{};
+			Vector3 toPoint{};		// Used to determine if pixel point in the right side of triangle
+
+			// Doing this instead of vector is more optimal
+			edge = v1 - v0;
+			toPoint = pixel - v0;
+			if ((Vector3::Dot(Vector3::Cross(edge, toPoint), triangleNormal)) < 0)
+				return false;
+
+			edge = v2 - v1;
+			toPoint = pixel - v1;
+			if ((Vector3::Dot(Vector3::Cross(edge, toPoint), triangleNormal)) < 0)
+				return false;
+
+			edge = v0 - v2;
+			toPoint = pixel - v2;
+			if ((Vector3::Dot(Vector3::Cross(edge, toPoint), triangleNormal)) < 0)
+				return false;
+
+			return true;
+		}
+#pragma endregion
+	}
 	namespace Utils
 	{
 		//Just parses vertices and indices
