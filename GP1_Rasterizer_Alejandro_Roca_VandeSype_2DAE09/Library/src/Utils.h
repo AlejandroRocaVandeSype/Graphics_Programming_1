@@ -12,30 +12,31 @@ namespace dae
 	{
 #pragma region Triangle HitTest
 		//TRIANGLE HIT-TESTS
-		inline bool PixelTest_Triangle(const Vector3& pixel, const Vector3& v0, const Vector3& v1, const Vector3& v2)
+		inline bool Triangle_PixelTest(const Vector2& pixel, const Vector3& v3_0, const Vector3& v3_1, const Vector3& v3_2)
 		{
-			//..... Calculate normal with triangle edges 
-			Vector3 triangleNormal{ Vector3::Cross((v1 - v0), (v2 - v0)).Normalized() };
+			// Convert them to Vector2
+			Vector2 v0{ v3_0.x, v3_0.y };
+			Vector2 v1{ v3_1.x, v3_1.y };
+			Vector2 v2{ v3_2.x, v3_2.y };
 
-			// Pixel inside the triangle? 
-			//.... Check for every edge from the triangle if the point is on the right side
-			Vector3 edge{};
-			Vector3 toPoint{};		// Used to determine if pixel point in the right side of triangle
+			//// Pixel inside the triangle? 
+			////.... Check for every edge from the triangle if the point is on the right side
+			Vector2 edge{};
+			Vector2 toPoint{};		// Used to determine if pixel point in the right side of triangle
 
-			// Doing this instead of vector is more optimal
-			edge = v1 - v0;
 			toPoint = pixel - v0;
-			if ((Vector3::Dot(Vector3::Cross(edge, toPoint), triangleNormal)) < 0)
+			edge = v1 - v0;
+			if (Vector2::Cross(edge, toPoint) < 0)
 				return false;
 
-			edge = v2 - v1;
 			toPoint = pixel - v1;
-			if ((Vector3::Dot(Vector3::Cross(edge, toPoint), triangleNormal)) < 0)
+			edge = v2 - v1;
+			if (Vector2::Cross(edge, toPoint) < 0)
 				return false;
 
-			edge = v0 - v2;
 			toPoint = pixel - v2;
-			if ((Vector3::Dot(Vector3::Cross(edge, toPoint), triangleNormal)) < 0)
+			edge = v0 - v2;
+			if (Vector2::Cross(edge, toPoint) < 0)
 				return false;
 
 			return true;

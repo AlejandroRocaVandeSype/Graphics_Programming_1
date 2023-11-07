@@ -1,1 +1,16 @@
-﻿
+﻿  Matrix.cpp
+  Renderer.cpp
+  Scene.cpp
+  Timer.cpp
+  main.cpp
+  Vector3.cpp
+  Vector4.cpp
+  Generating code
+  Previous IPDB not found, fall back to full compilation.
+  All 932 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  RayTracer.vcxproj -> C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_Raytracer_Alejandro_Roca_VandeSype_2DAE09\bin\Release\RayTracer.exe
+  0 File(s) copied
+  0 File(s) copied
+  0 File(s) copied
+  0 File(s) copied

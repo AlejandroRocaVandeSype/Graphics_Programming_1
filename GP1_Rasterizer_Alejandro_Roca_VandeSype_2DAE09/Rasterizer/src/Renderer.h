@@ -37,6 +37,7 @@ namespace dae
 	private:
 
 		inline void Render_W1_Part1();
+		inline void Render_W1_Part2();
 
 		SDL_Window* m_pWindow{};
 
@@ -50,5 +51,6 @@ namespace dae
 
 		int m_Width{};
 		int m_Height{};
+		float m_AspectRatio{};
 	};
 }
