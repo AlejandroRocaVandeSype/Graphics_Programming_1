@@ -3,6 +3,7 @@
 #include <fstream>
 #include "Maths.h"
 #include "DataTypes.h"
+#include <iostream>
 
 #define DISABLE_OBJ
 
@@ -14,7 +15,7 @@ namespace dae
 		//TRIANGLE HIT-TESTS
 		inline bool Triangle_PixelTest(const Vector2& pixel, const Vector3& v3_0, const Vector3& v3_1, const Vector3& v3_2)
 		{
-			// Convert them to Vector2
+			// Convert to Vector2
 			Vector2 v0{ v3_0.x, v3_0.y };
 			Vector2 v1{ v3_1.x, v3_1.y };
 			Vector2 v2{ v3_2.x, v3_2.y };
@@ -22,7 +23,7 @@ namespace dae
 			//// Pixel inside the triangle? 
 			////.... Check for every edge from the triangle if the point is on the right side
 			Vector2 edge{};
-			Vector2 toPoint{};		// Used to determine if pixel point in the right side of triangle
+			Vector2 toPoint{};		// Used to determine if pixel point in the right side of triangle			
 
 			toPoint = pixel - v0;
 			edge = v1 - v0;

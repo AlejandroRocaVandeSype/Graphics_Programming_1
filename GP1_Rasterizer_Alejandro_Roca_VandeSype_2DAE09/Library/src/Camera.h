@@ -182,7 +182,7 @@ namespace dae
 			{
 				// Right mouse button pressed (And left one is not)
 				totalPitch += static_cast<float>(mouseX) * rotationSpeed;
-				totalYaw += static_cast<float>(mouseY) * rotationSpeed;
+				totalYaw -= static_cast<float>(mouseY) * rotationSpeed;
 			}
 
 
