@@ -150,7 +150,6 @@ namespace dae
 
 			//// Calculate Diffuse
 			ColorRGB diffuse{ BRDF::Lambert(kd, m_Albedo) };
-			//return diffuse;
 
 			return (kd * diffuse) + (fresnel * cookTorrance);
 

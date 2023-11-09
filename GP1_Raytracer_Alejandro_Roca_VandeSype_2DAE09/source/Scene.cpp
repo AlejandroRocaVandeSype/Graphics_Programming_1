@@ -30,19 +30,19 @@ namespace dae {
 	void dae::Scene::GetClosestHit(const Ray& ray, HitRecord& closestHit) const
 	{	
 		// Iterate over all spheres from the scene
-		for (const auto& sphere : m_SphereGeometries)
+		for (const dae::Sphere& sphere : m_SphereGeometries)
 		{
 			GeometryUtils::HitTest_Sphere(sphere, ray, closestHit);
 		}
 
 		// ..... all planes
-		for (const auto& plane : m_PlaneGeometries)
+		for (const dae::Plane& plane : m_PlaneGeometries)
 		{
 			GeometryUtils::HitTest_Plane(plane, ray, closestHit);
 		}
 
 		// .... all triangles meshes
-		for (const auto& triangleMesh : m_TriangleMeshGeometries)
+		for (const dae::TriangleMesh& triangleMesh : m_TriangleMeshGeometries)
 		{
 			GeometryUtils::HitTest_TriangleMesh(triangleMesh, ray, closestHit);
 		}
@@ -53,21 +53,21 @@ namespace dae {
 	bool Scene::DoesHit(const Ray& ray) const
 	{
 		// Iterate over all spheres from the scene
-		for (const auto& sphere : m_SphereGeometries)
+		for (const dae::Sphere& sphere : m_SphereGeometries)
 		{
 			if (GeometryUtils::HitTest_Sphere(sphere, ray))
 				return true;
 		}
 
 		// ..... all planes
-		for (const auto& plane : m_PlaneGeometries)
+		for (const dae::Plane& plane : m_PlaneGeometries)
 		{
 			if (GeometryUtils::HitTest_Plane(plane, ray))
 				return true;
 		}
 
 		//.... all triangles meshes
-		for (const auto& triangleMesh : m_TriangleMeshGeometries)
+		for (const dae::TriangleMesh& triangleMesh : m_TriangleMeshGeometries)
 		{
 			if (GeometryUtils::HitTest_TriangleMesh(triangleMesh, ray))
 				return true;
@@ -367,7 +367,8 @@ namespace dae {
 	{
 		sceneName = "Reference Scene";
 		m_Camera.origin = { 0,3,-9 };
-		m_Camera.fovAngle = 45.f;
+		m_Camera.UpdateFovAngle(45.f);
+		//m_Camera.fovAngle = 45.f;
 
 		const auto matCT_GrayRoughMetal = AddMaterial(new Material_CookTorrence({ .972f, .960f, .915f }, 1.f, 1.f));
 		const auto matCT_GrayMediumMetal = AddMaterial(new Material_CookTorrence({ .972f, .960f, .915f }, 1.f, .6f));
@@ -440,7 +441,8 @@ namespace dae {
 	{
 		sceneName = "Bunny Scene";
 		m_Camera.origin = { 0,3,-9 };
-		m_Camera.fovAngle = 45.f;
+		m_Camera.UpdateFovAngle(45.f);
+		//m_Camera.fovAngle = 45.f;
 
 		const auto matCT_GrayRoughMetal = AddMaterial(new Material_CookTorrence({ .972f, .960f, .915f }, 1.f, 1.f));
 		const auto matCT_GrayMediumMetal = AddMaterial(new Material_CookTorrence({ .972f, .960f, .915f }, 1.f, .6f));

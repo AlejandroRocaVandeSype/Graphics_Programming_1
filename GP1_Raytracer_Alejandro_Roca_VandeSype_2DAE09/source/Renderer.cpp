@@ -25,6 +25,17 @@ Renderer::Renderer(SDL_Window * pWindow) :
 	//Initialize
 	SDL_GetWindowSize(pWindow, &m_Width, &m_Height);
 	m_pBufferPixels = static_cast<uint32_t*>(m_pBuffer->pixels);
+
+	m_aspectRatio = m_Width / static_cast<float>(m_Height);
+
+	// Calculate the amount of pixels needed based on the width and height 
+	uint32_t amountOfPixels{ static_cast<uint32_t>(m_Width * m_Height) };
+	m_pixelIndices.reserve(amountOfPixels);
+
+	for (uint32_t index{}; index < amountOfPixels; ++index)
+		m_pixelIndices.emplace_back(index);
+
+
 }
 
 void Renderer::Render(Scene* pScene) const
@@ -37,37 +48,19 @@ void Renderer::Render(Scene* pScene) const
 	// This way we know in which direction and position the camera is 
 	const Matrix cameraToWorld{ camera.CalculateCameraToWorld() };
 
-	// Current aspect ratio
-	float aspectRatio{ m_Width / static_cast<float>(m_Height) };
-	// To get the center of the pixel
-	const float halfPixelSize{ 0.5f };
-	// Ray origin (Camera)
-	const Vector3 origin{ 0, 0, 0 };
-
-	// Calculate the FOV for the ray calculation
-	// (Could be better optimized if we only calculated when it changes
-	// instead of every frame )
-	const float FOV{ tan( (camera.fovAngle * TO_RADIANS) / 2) };
-	uint32_t amountOfPixels{ static_cast<uint32_t>(m_Width * m_Height) };
-
 #ifdef PARALLEL_EXECUTION
 	// Parallel logic
-	std::vector<uint32_t> pixelIndices{};
-	pixelIndices.reserve(amountOfPixels);
-
-	for (uint32_t index{}; index < amountOfPixels; ++index)
-		pixelIndices.emplace_back(index);
 
 	// Execute renderPixel for each pixel
-	std::for_each(std::execution::par, pixelIndices.begin(), pixelIndices.end(),
+	std::for_each(std::execution::par, m_pixelIndices.begin(), m_pixelIndices.end(),
 		[&](int i)
-		{ RenderPixel(pScene, i, FOV, aspectRatio, cameraToWorld, camera.origin); } );
+		{ RenderPixel(pScene, i, cameraToWorld, camera.origin); } );
 
 #else // Synchronous logic (no multithreading)
 
-	for (uint32_t pixelIdx{}; pixelIdx < amountOfPixels; ++pixelIdx)
+	for (uint32_t pixelIdx{}; pixelIdx < m_pixelIndices.size(); ++pixelIdx)
 	{
-		RenderPixel(pScene, pixelIdx, FOV, aspectRatio, cameraToWorld, camera.origin);
+		RenderPixel(pScene, pixelIdx, cameraToWorld, camera.origin);
 	}
 #endif // PARALLEL_EXECUTION
 
@@ -78,21 +71,20 @@ void Renderer::Render(Scene* pScene) const
 }
 
 
-void Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, const float fov, float aspectRatio, const Matrix& cameraToWorld, const Vector3& cameraOrigin) const
+void Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, const Matrix& cameraToWorld, const Vector3& cameraOrigin) const
 {
 	std::vector<dae::Material*> materials{ pScene->GetMaterials() };
 
 	const uint32_t px{ pixelIndex % m_Width };
 	const uint32_t py{ pixelIndex / m_Width };
 
-	// To get the center of the pixel
-	const float halfPixelSize{ 0.5f };
-
 	// For each pixel
 			//... Ray calculation ( Take aspect ratio and FOV into account )
+			//... Add half of the pixel size to get the center of the pixel
 	Vector3 rayDirection{};
-	rayDirection.x = (2.f * ((static_cast<float>(px) + halfPixelSize) / static_cast<float>(m_Width)) - 1.f) * aspectRatio * fov;
-	rayDirection.y = (1.f - 2.f * (static_cast<float>(py) + halfPixelSize) / static_cast<float>(m_Height)) * fov;
+	rayDirection.x = (2.f * ((static_cast<float>(px) + 0.5f) / static_cast<float>(m_Width)) - 1.f) * m_aspectRatio 
+		* pScene->GetCamera().fov;
+	rayDirection.y = (1.f - 2.f * (static_cast<float>(py) + 0.5f) / static_cast<float>(m_Height)) * pScene->GetCamera().fov;
 	rayDirection.z = 1.f;
 
 	// Transform this ray direction using the Camera ONB matrix, so we take into account 

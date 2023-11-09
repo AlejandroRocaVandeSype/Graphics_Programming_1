@@ -14,42 +14,40 @@ namespace dae
 		{	
 			Vector3 sphereToRay{ ray.origin - sphere.origin };
 
-			// Calculate Discriminant to see if there is a full Intersection ( Discriminant > 0 )
+			//// Calculate Discriminant to see if there is a full Intersection ( Discriminant > 0 )
 			float a{ Vector3::Dot(ray.direction, ray.direction) };
-			float b{ Vector3::Dot((2 * ray.direction), sphereToRay) };
+			//float b{ Vector3::Dot((2 * ray.direction), sphereToRay) };
+			float b{ 2.0f * Vector3::Dot(ray.direction, sphereToRay) };
 			float c{ (Vector3::Dot(sphereToRay, sphereToRay)) - (sphere.radius * sphere.radius) };
 
 			float discriminant{ (b * b) - (4 * a * c) };
 			if (discriminant > 0)
 			{
 				// FULL INTERSECTION OF THE RAY ( 2 intersection points)
-				float discSquared{ sqrt(discriminant) };
-				float newT{ (-b - discSquared) / (2 * a) };
-				if (newT < ray.min)
-				{
-					// T behind the tMin -> use the + formula
-					newT = (-b + discSquared) / (2 * a);
-				}
+				float sqrtDiscriminant{ sqrt(discriminant) };
+				float inv2a{ 1.0f / (2.0f * a) };
+
+				float t0{ (-b - sqrtDiscriminant) * inv2a };
+				float t1{ (-b + sqrtDiscriminant) * inv2a };
+
+				// If t0 smaller than t1 then we take t0. 
+				// Otherwise t1 is smaller and we take this one
+				float tClosest{ t0 < t1 ? t0 : t1 };
 
 				// Check if it is in [tMin, tMax]	
-				if (newT >= ray.min && newT <= ray.max)
+				if (tClosest >= ray.min && tClosest <= ray.max)
 				{
-					// Valid Range
-					if (ignoreHitRecord == false)
+					// VALID RANGE
+					// ... Check if smaller than the previous t saved
+					if (!ignoreHitRecord)
 					{
-						// Check if smaller than the previous t saved
-						if (hitRecord.t >= newT)
-						{
-							// Calculate intersection point
-							hitRecord.origin = ray.origin + (newT * ray.direction);
-							hitRecord.normal = (hitRecord.origin - sphere.origin).Normalized();
-							hitRecord.t = newT;
-							hitRecord.didHit = true;
-							hitRecord.materialIndex = sphere.materialIndex;
-						}
-					}				
+						hitRecord.t = tClosest;
+						hitRecord.origin = ray.origin + ( tClosest * ray.direction );
+						hitRecord.normal = (hitRecord.origin - sphere.origin).Normalized();
+						hitRecord.didHit = true;
+						hitRecord.materialIndex = sphere.materialIndex;
+					}
 					return true;
-					
 				}
 			}
 			
@@ -110,6 +108,8 @@ namespace dae
 			float angleNormalRay{ Vector3::Dot(triangleNormal, ray.direction) };
 			if (AreEqual(angleNormalRay, 0.f))
 				return false;	// If 0 means the ray is perpendicular to the normal so we dont actually see the triangle
+
+			
 
 			if (triangle.cullMode == TriangleCullMode::BackFaceCulling)
 			{
@@ -262,7 +262,7 @@ namespace dae
 	namespace LightUtils
 	{
 		//Direction from target to light
-		inline Vector3 GetDirectionToLight(const Light& light, const Vector3 origin)
+		inline Vector3 GetDirectionToLight(const Light& light, const Vector3& origin)
 		{
 			if (light.type == LightType::Directional)
 			{

@@ -13,14 +13,17 @@ namespace dae
 	{
 		Camera() = default;
 
-		Camera(const Vector3& _origin, float _fovAngle):
-			origin{_origin},
-			fovAngle{_fovAngle}
+		Camera(const Vector3& _origin, float _fovAngle) :
+			origin{ _origin },
+			fovAngle{ _fovAngle },
+			fov{ tan((fovAngle * TO_RADIANS) / 2) }
+
 		{
 		}
 
 		Vector3 origin{};
-		float fovAngle{90.f};
+		float fovAngle{90.f};	
+		float fov{};			// Calculate the FOV for the ray calculation
 
 		//Vector3 forward{0.266f, -0.453f, 0.860f};
 		Vector3 forward{ Vector3::UnitZ };
@@ -160,6 +163,17 @@ namespace dae
 			forward = finalRotation.TransformVector(Vector3::UnitZ);
 			forward.Normalize();
 			
+		}
+
+
+		void UpdateFovAngle(const float newFovAngle)
+		{
+			if (newFovAngle != fovAngle)
+			{
+				// Calculate the fov with the new fov Angle
+				fovAngle = newFovAngle;
+				fov = tan((fovAngle * TO_RADIANS) / 2);
+			}
 		}
 	};
 }

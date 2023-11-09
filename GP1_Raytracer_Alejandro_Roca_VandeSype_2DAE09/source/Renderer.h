@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <vector>
 
 struct SDL_Window;
 struct SDL_Surface;
@@ -24,7 +25,7 @@ namespace dae
 		Renderer& operator=(Renderer&&) noexcept = delete;
 
 		void Render(Scene* pScene) const;
-		void RenderPixel(Scene* pScene, uint32_t pixelIndex, const float fov, float aspectRatio, const Matrix& cameraToWorld, const Vector3& cameraOrigin) const;	  // Process each pixel
+		void RenderPixel(Scene* pScene, uint32_t pixelIndex, const Matrix& cameraToWorld, const Vector3& cameraOrigin) const;	  // Process each pixel
 		bool SaveBufferToImage() const;
 
 		// LIGHTING
@@ -39,6 +40,8 @@ namespace dae
 
 		int m_Width{};
 		int m_Height{};
+		float m_aspectRatio{};
+		std::vector<uint32_t> m_pixelIndices{};
 
 		// LIGHTING
 		enum class LightingMode
