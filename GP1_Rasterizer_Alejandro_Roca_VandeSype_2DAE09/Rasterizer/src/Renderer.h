@@ -39,19 +39,22 @@ namespace dae
 		inline void Render_W1_Part1();
 		inline void Render_W1_Part2();
 		inline void Render_W1_Part3();
+		inline void Render_W1_Part4();
 
 		SDL_Window* m_pWindow{};
 
 		SDL_Surface* m_pFrontBuffer{ nullptr };
 		SDL_Surface* m_pBackBuffer{ nullptr };
 		uint32_t* m_pBackBufferPixels{};
+		Uint32 m_backgroundColor{};
 
-		//float* m_pDepthBufferPixels{};
+		float* m_pDepthBufferPixels{};			// Contains the Depth/Z-component from the pixels
+		Uint32 m_totalPixels{};
 
 		Camera m_Camera{};
 
 		int m_Width{};
-		int m_Height{};
+		int m_Height{};	
 		float m_AspectRatio{};
 	};
 }
