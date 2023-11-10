@@ -40,6 +40,7 @@ namespace dae
 		inline void Render_W1_Part2();
 		inline void Render_W1_Part3();
 		inline void Render_W1_Part4();
+		inline void Render_W1_Part5();
 
 		SDL_Window* m_pWindow{};
 

@@ -28,8 +28,8 @@ namespace dae
 		Vector3 right{Vector3::UnitX};
 
 		bool canRotate{ true };			// To enable/disable rotations when LMB + RMB is pressed/notpressed
-		float movementSpeed{ 0.1f };
-		float rotationSpeed{ 0.03f };
+		float movementSpeed{ 9.f };
+		float rotationSpeed{ 5.f };
 		float movementInc{ 4.f };
 
 		float totalPitch{};
@@ -108,17 +108,17 @@ namespace dae
 			const uint32_t mouseState = SDL_GetRelativeMouseState(&mouseX, &mouseY);
 
 			canRotate = true;
-			UpdateMovement(pKeyboardState, mouseX, mouseY);
+			UpdateMovement(deltaTime, pKeyboardState, mouseX, mouseY);
 
 			if (canRotate)
-				UpdateRotation(mouseX, mouseY);
+				UpdateRotation(deltaTime, mouseX, mouseY);
 
 			//Update Matrices
 			CalculateViewMatrix();
 			CalculateProjectionMatrix(); //Try to optimize this - should only be called once or when fov/aspectRatio changes
 		}
 
-		inline void UpdateMovement(const uint8_t* pKeyboardState, const int mouseX, const int mouseY)
+		inline void UpdateMovement(float deltaTime, const uint8_t* pKeyboardState, const int mouseX, const int mouseY)
 		{
 			if (pKeyboardState[SDL_SCANCODE_LSHIFT])
 			{
@@ -132,11 +132,11 @@ namespace dae
 			// FORWARD / BACKWARD MOVEMENT
 			if (pKeyboardState[SDL_SCANCODE_W])
 			{
-				origin += forward * movementSpeed * movementInc;
+				origin += forward * movementSpeed * movementInc * deltaTime;
 			}
 			if (pKeyboardState[SDL_SCANCODE_S])
 			{
-				origin -= forward * movementSpeed * movementInc;
+				origin -= forward * movementSpeed * movementInc * deltaTime;
 			}
 
 			// Forward / BackWard / Up / Down with mouse
@@ -146,34 +146,35 @@ namespace dae
 				if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_RIGHT))
 				{
 					// Right mouse button is also pressed
-					origin += (up * static_cast<float>(-mouseY)) * movementSpeed * movementInc;
+					origin += (up * static_cast<float>(-mouseY)) * movementSpeed * movementInc * deltaTime;
 					canRotate = false;
 				}
 				else
 				{
 					// Only LMB is pressed
-					origin += (forward * static_cast<float>(-mouseY)) * movementSpeed * movementInc;
+					origin += (forward * static_cast<float>(-mouseY)) * movementSpeed * movementInc * deltaTime;
 				}
 			}
 
 			// LEFT / RIGHT MOVEMENT 
 			if (pKeyboardState[SDL_SCANCODE_A])
 			{
-				origin -= right * movementSpeed * movementInc;
+				origin -= right * movementSpeed * movementInc * deltaTime;
 			}
 			if (pKeyboardState[SDL_SCANCODE_D])
 			{
-				origin += right * movementSpeed * movementInc;
+				origin += right * movementSpeed * movementInc * deltaTime;
 			}
 		}
 
-		inline void UpdateRotation(int mouseX, int mouseY)
+		inline void UpdateRotation(float deltaTime, int mouseX, int mouseY)
 		{
+
 			// Calculate total X rotation
 			if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT))
 			{
 				// Left mouse button pressed
-				totalPitch += static_cast<float>(mouseX) * rotationSpeed;
+				totalPitch += static_cast<float>(mouseX) * rotationSpeed * deltaTime;
 			}
 
 			// Calculate total X/Y rotation
@@ -181,8 +182,8 @@ namespace dae
 				!(SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT)))
 			{
 				// Right mouse button pressed (And left one is not)
-				totalPitch += static_cast<float>(mouseX) * rotationSpeed;
-				totalYaw -= static_cast<float>(mouseY) * rotationSpeed;
+				totalPitch += static_cast<float>(mouseX) * rotationSpeed * deltaTime;
+				totalYaw -= static_cast<float>(mouseY) * rotationSpeed * deltaTime;
 			}
 
 
