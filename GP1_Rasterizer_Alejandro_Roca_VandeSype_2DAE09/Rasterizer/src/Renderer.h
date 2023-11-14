@@ -32,8 +32,6 @@ namespace dae
 
 		bool SaveBufferToImage() const;
 
-		void VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex>& vertices_out) const;
-
 	private:
 
 		inline void Render_W1_Part1();
@@ -41,6 +39,16 @@ namespace dae
 		inline void Render_W1_Part3();
 		inline void Render_W1_Part4();
 		inline void Render_W1_Part5();
+		
+		// Week 2
+		inline void Render_W2_Part1();
+
+
+		void VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex>& vertices_out) const;
+		void VertexTransformationFunction(const std::vector<Mesh>& meshes_in, std::vector<Vertex>& vertices_out) const;
+
+		inline void RenderPixel(const std::vector<dae::Vertex>& vertices_ssv, const std::vector<uint32_t>& meshes_indices, 
+			size_t triangleIdx) const;
 
 		SDL_Window* m_pWindow{};
 
