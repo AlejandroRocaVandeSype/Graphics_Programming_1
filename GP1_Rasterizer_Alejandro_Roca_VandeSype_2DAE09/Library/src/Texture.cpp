@@ -51,11 +51,17 @@ namespace dae
 		int x{ static_cast<int>(uv.x * (m_pSurface->w - 1)) };
 		int y{ static_cast<int>(uv.y * (m_pSurface->h - 1)) };
 
+		/*x = x < 0 ? 0 : x;
+		x = x > m_pSurface->w - 1 ? m_pSurface->w - 1 : x;
+		y = y < 0 ? 0 : y;
+		y = y > m_pSurface->h - 1 ? m_pSurface->h - 1 : y;
+		*/
 		// With the UV coords we convert them to a single index to be used in the 
 		// array of pixels in the surface
-		int index{ y * m_pSurface->w + x };
+		uint32_t index{ static_cast<uint32_t>(y * m_pSurface->w + x) };
 
 		// Get the pixel value from the SDL_SurfacePixels directly
+		
 		uint32_t pixel{ m_pSurfacePixels[index] };
 
 		// Extract the RGB components using SDL_GetRGB

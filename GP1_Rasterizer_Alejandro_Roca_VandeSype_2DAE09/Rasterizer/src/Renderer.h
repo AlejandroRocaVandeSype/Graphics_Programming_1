@@ -43,6 +43,7 @@ namespace dae
 		// Week 2
 		inline void Render_W2_Part1();	 // QUADS
 		inline void Render_W2_Part2();	// Textures & Vertex Attributes
+		inline void Render_W2_Part3();	// Depth Interpolation
 
 
 		void VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex>& vertices_out) const;
