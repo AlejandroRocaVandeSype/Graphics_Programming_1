@@ -41,7 +41,8 @@ namespace dae
 		inline void Render_W1_Part5();
 		
 		// Week 2
-		inline void Render_W2_Part1();
+		inline void Render_W2_Part1();	 // QUADS
+		inline void Render_W2_Part2();	// Textures & Vertex Attributes
 
 
 		void VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex>& vertices_out) const;
@@ -56,6 +57,8 @@ namespace dae
 		SDL_Surface* m_pBackBuffer{ nullptr };
 		uint32_t* m_pBackBufferPixels{};
 		Uint32 m_backgroundColor{};
+
+		Texture* m_pTexture;
 
 		float* m_pDepthBufferPixels{};			// Contains the Depth/Z-component from the pixels
 		Uint32 m_totalPixels{};

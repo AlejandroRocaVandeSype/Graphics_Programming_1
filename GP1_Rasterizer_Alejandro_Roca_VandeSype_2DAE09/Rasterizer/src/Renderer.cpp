@@ -12,7 +12,8 @@ using namespace dae;
 
 Renderer::Renderer(SDL_Window* pWindow) :
 	m_pWindow(pWindow),
-	m_AspectRatio{ -1.f }
+	m_AspectRatio{ -1.f },
+	m_pTexture{ nullptr }
 {
 	//Initialize
 	SDL_GetWindowSize(pWindow, &m_Width, &m_Height);
@@ -22,6 +23,9 @@ Renderer::Renderer(SDL_Window* pWindow) :
 	m_pBackBuffer = SDL_CreateRGBSurface(0, m_Width, m_Height, 32, 0, 0, 0, 0);
 	m_pBackBufferPixels = (uint32_t*)m_pBackBuffer->pixels;
 	//m_backgroundColor = SDL_MapRGB(m_pBackBuffer->format, 100, 100, 100);
+
+	// Load texture from the file
+	m_pTexture = Texture::LoadFromFile("Resources/uv_grid_2.png");
 
 	// Create the depth buffer with the amount of pixels
 	m_totalPixels = m_Width * m_Height;
@@ -36,6 +40,7 @@ Renderer::Renderer(SDL_Window* pWindow) :
 Renderer::~Renderer()
 {
 	delete[] m_pDepthBufferPixels;
+	delete m_pTexture;
 }
 
 void Renderer::Update(Timer* pTimer)
@@ -61,7 +66,8 @@ void Renderer::Render()
 	//Render_W1_Part4();		// Depth Buffer
 	//Render_W1_Part5();		// BoundingBox Optimization
 	  
-	Render_W2_Part1();
+	//Render_W2_Part1();
+	Render_W2_Part2();			// Textures & Vertex Attributes
 
 	//@END
 	//Update SDL Surface
@@ -597,7 +603,7 @@ inline void Renderer::Render_W1_Part5()
 	}
 }
 
-void Renderer::Render_W2_Part1()
+inline void Renderer::Render_W2_Part1()
 {
 	
 	std::vector<Mesh> meshes_world
@@ -697,6 +703,106 @@ void Renderer::Render_W2_Part1()
 	}
 }
 
+inline void Renderer::Render_W2_Part2()
+{
+	std::vector<Mesh> meshes_world
+	{
+		Mesh{
+			{ // Vertices
+				Vertex{ {-3.f, 3.f, -2.f}, ColorRGB{colors::White}, {0.f,0.f} },
+				Vertex{ {0.f, 3.f, -2.f}, ColorRGB{colors::White}, {0.5f,0.f} },
+				Vertex{ {3.f, 3.f, -2.f}, ColorRGB{colors::White}, {1.f,0.f}},
+				Vertex{ {-3.f, 0.f, -2.f}, ColorRGB{colors::White}, {0.f,0.5f} },
+				Vertex{ {0.f, 0.f, -2.f}, ColorRGB{colors::White}, {0.5f,0.5f} },
+				Vertex{ {3.f, 0.f, -2.f}, ColorRGB{colors::White}, {1.f,0.5f}},
+				Vertex{ {-3.f, -3.f, -2.f}, ColorRGB{colors::White}, {0,1.f} },
+				Vertex{ {0.f, -3.f, -2.f}, ColorRGB{colors::White}, {0.5f,1.f} },
+				Vertex{ {3.f, -3.f, -2.f} , ColorRGB{colors::White}, {1.f,1.f}},
+			},
+
+			//{ // Indices ( TriangleList )
+			//	3, 0, 1,	1, 4, 3,   4, 1, 2,
+			//	2, 5, 4,	6, 3, 4,	4, 7, 6,
+			//	7, 4, 5,	5, 8, 7
+			//},
+			{ // Indices ( TriangleStrip )
+				3, 0, 4, 1, 5, 2,
+				2, 6,
+				6, 3, 7, 4, 8, 5
+			},
+
+			PrimitiveTopology::TriangleStrip
+		}
+	};
+
+
+	// *** PROJECTION STAGE ***
+	// Transform the vector with the World Space vertices to NDC space vertices
+	std::vector<Vertex> vertices_ndc{};
+	VertexTransformationFunction(meshes_world, vertices_ndc);
+
+	// *** RASTERIZATION STAGE ***
+	// Convert coordinates from NDC to Screen Space 
+	std::vector<Vertex> vertices_ssv{};
+	vertices_ssv.reserve(vertices_ndc.size());
+	Vertex screenSpaceVertex{};
+	for (const Vertex& vertex : vertices_ndc)
+	{
+		screenSpaceVertex.position.x = ((vertex.position.x + 1) / 2) * m_Width;
+		screenSpaceVertex.position.y = ((1 - vertex.position.y) / 2) * m_Height;
+		screenSpaceVertex.position.z = vertex.position.z;
+		screenSpaceVertex.color = vertex.color;
+		screenSpaceVertex.uv = vertex.uv;
+		vertices_ssv.emplace_back(screenSpaceVertex);
+	}
+
+	std::vector<Uint32> meshes_indices{ meshes_world.at(0).indices };
+
+	if (meshes_world.at(0).primitiveTopology == PrimitiveTopology::TriangleList)
+	{
+		// Loop through all triangles ( Every 3 indeces is one triangle )
+		for (size_t triangleIdx{ 0 }; triangleIdx < meshes_indices.size(); triangleIdx += 3)
+		{
+			RenderPixel(vertices_ssv, meshes_indices, triangleIdx);
+		}
+	}
+	else
+	{
+		// TriangleStrip Mode
+		// Loop through all triangles ( Loop shifting varies depending on our PrimitiveTopology mode )
+		for (size_t triangleIdx{ 0 }; triangleIdx + 2 < meshes_indices.size(); ++triangleIdx)
+		{
+			if (triangleIdx % 2 != 0)
+			{
+				// Odd triangle -> Swap the last two vertices
+				std::swap(meshes_indices[triangleIdx + 1], meshes_indices[triangleIdx + 2]);
+			}
+
+			// If no surface area ( Two identical indeces ) then we are in a degenerate triangle
+			if (meshes_indices[triangleIdx] == meshes_indices[triangleIdx + 1] ||
+				meshes_indices[triangleIdx + 1] == meshes_indices[triangleIdx + 2]
+				|| meshes_indices[triangleIdx] == meshes_indices[triangleIdx + 2])
+			{
+				if (triangleIdx % 2 != 0)
+				{
+					// Swap back to original
+					std::swap(meshes_indices[triangleIdx + 1], meshes_indices[triangleIdx + 2]);
+				}
+				// Degenerate triangle -> Go next one
+				continue;
+			}
+
+			RenderPixel(vertices_ssv, meshes_indices, triangleIdx);
+
+			if (triangleIdx % 2 != 0)
+			{
+				// Swap back to original vertices
+				std::swap(meshes_indices[triangleIdx + 1], meshes_indices[triangleIdx + 2]);
+			}
+		}
+	}
+}
+
 void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex>& vertices_out) const
 {
 	//Todo > W1 Projection Stage
@@ -744,6 +850,7 @@ void Renderer::VertexTransformationFunction(const std::vector<Mesh>& meshes_in, 
 		projectedVertex.position.x = projectedVertex.position.x / (m_Camera.fov * m_AspectRatio);
 		projectedVertex.position.y = projectedVertex.position.y / m_Camera.fov;
 		projectedVertex.color = vertex.color;
+		projectedVertex.uv = vertex.uv;
 
 		// Now our vertex is in NDC(Space)
 		vertices_out.emplace_back(projectedVertex);
@@ -751,7 +858,7 @@ void Renderer::VertexTransformationFunction(const std::vector<Mesh>& meshes_in, 
 }
 
 
-void Renderer::RenderPixel(const std::vector<dae::Vertex>& vertices_ssv, const std::vector<uint32_t>& meshes_indices,
+inline void Renderer::RenderPixel(const std::vector<dae::Vertex>& vertices_ssv, const std::vector<uint32_t>& meshes_indices,
 	size_t triangleIdx) const
 {
 	Vector2 pixel{};
@@ -850,10 +957,16 @@ void Renderer::RenderPixel(const std::vector<dae::Vertex>& vertices_ssv, const s
 			// Store it
 			m_pDepthBufferPixels[pixelIndex] = pixelDepth;
 
+
+			Vector2 uv{ (vertices_ssv[meshes_indices[triangleIdx]].uv * w0) + (vertices_ssv[meshes_indices[triangleIdx + 1]].uv * w1)
+				+ (vertices_ssv[meshes_indices[triangleIdx + 2]].uv * w2) };
+
+			finalColor = m_pTexture->Sample(uv);
+
 			// Final color of the triangle is gonna be an interpolated color based on the color 
 			// and weight from the vertices
-			finalColor = (vertices_ssv[meshes_indices[triangleIdx]].color * w0) + (vertices_ssv[meshes_indices[triangleIdx + 1]].color * w1)
-				+ (vertices_ssv[meshes_indices[triangleIdx + 2]].color * w2);
+			/*finalColor = (vertices_ssv[meshes_indices[triangleIdx]].color * w0) + (vertices_ssv[meshes_indices[triangleIdx + 1]].color * w1)
+				+ (vertices_ssv[meshes_indices[triangleIdx + 2]].color * w2);*/
 
 			//Update Color in Buffer
 			finalColor.MaxToOne();
