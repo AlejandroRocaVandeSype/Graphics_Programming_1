@@ -12,7 +12,9 @@ namespace dae
 {
 	class Texture;
 	struct Mesh;
+	struct MeshWorld;
 	struct Vertex;
+	struct Vertex_Out;
 	class Timer;
 	class Scene;
 
@@ -45,9 +47,14 @@ namespace dae
 		inline void Render_W2_Part2();	// Textures & Vertex Attributes
 		inline void Render_W2_Part3();	// Depth Interpolation
 
+		// Week 3
+		inline void Render_W3();
+
 
 		void VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex>& vertices_out) const;
-		void VertexTransformationFunction(const std::vector<Mesh>& meshes_in, std::vector<Vertex>& vertices_out) const;
+		//void VertexTransformationFunction_W2_Part1(std::vector<Mesh>& meshes_in, std::vector<Vertex>& vertices_out) const;
+		void VertexTransformationFunction_W2( std::vector<Mesh>& meshes_in) const;
+		void VertexTransformationFunction_W3(std::vector<MeshWorld>& meshes_in, std::vector<Vertex_Out>& vertices_out) const;
 
 		inline void RenderPixel(const std::vector<dae::Vertex>& vertices_ssv, const std::vector<uint32_t>& meshes_indices, 
 			size_t triangleIdx) const;

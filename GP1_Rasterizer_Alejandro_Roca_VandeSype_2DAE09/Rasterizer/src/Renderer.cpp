@@ -31,10 +31,12 @@ Renderer::Renderer(SDL_Window* pWindow) :
 	m_totalPixels = m_Width * m_Height;
 	m_pDepthBufferPixels = new float[m_totalPixels];
 
-	//Initialize Camera
-	m_Camera.Initialize(60.f, { .0f,.0f,-10.f });
-
 	m_AspectRatio = m_Width / static_cast<float>(m_Height);
+
+	//Initialize Camera
+	m_Camera.Initialize(m_AspectRatio, 60.f, { .0f,.0f,-10.f });
+
+	
 }
 
 Renderer::~Renderer()
@@ -70,6 +72,7 @@ void Renderer::Render()
 	//Render_W2_Part2();			// Textures & Vertex Attributes
 	Render_W2_Part3();
 
+	//Render_W3();
 
 	//@END
 	//Update SDL Surface
@@ -642,7 +645,7 @@ inline void Renderer::Render_W2_Part1()
 	// *** PROJECTION STAGE ***
 	// Transform the vector with the World Space vertices to NDC space vertices
 	std::vector<Vertex> vertices_ndc{};
-	VertexTransformationFunction(meshes_world, vertices_ndc);
+	/*VertexTransformationFunction_W2(meshes_world, vertices_ndc);*/
 
 	// *** RASTERIZATION STAGE ***
 	// Convert coordinates from NDC to Screen Space 
@@ -707,102 +710,102 @@ inline void Renderer::Render_W2_Part1()
 
 inline void Renderer::Render_W2_Part2()
 {
-	std::vector<Mesh> meshes_world
-	{
-		Mesh{
-			{ // Vertices
-				Vertex{ {-3.f, 3.f, -2.f}, ColorRGB{colors::White}, {0.f,0.f} },
-				Vertex{ {0.f, 3.f, -2.f}, ColorRGB{colors::White}, {0.5f,0.f} },
-				Vertex{ {3.f, 3.f, -2.f}, ColorRGB{colors::White}, {1.f,0.f}},
-				Vertex{ {-3.f, 0.f, -2.f}, ColorRGB{colors::White}, {0.f,0.5f} },
-				Vertex{ {0.f, 0.f, -2.f}, ColorRGB{colors::White}, {0.5f,0.5f} },
-				Vertex{ {3.f, 0.f, -2.f}, ColorRGB{colors::White}, {1.f,0.5f}},
-				Vertex{ {-3.f, -3.f, -2.f}, ColorRGB{colors::White}, {0,1.f} },
-				Vertex{ {0.f, -3.f, -2.f}, ColorRGB{colors::White}, {0.5f,1.f} },
-				Vertex{ {3.f, -3.f, -2.f} , ColorRGB{colors::White}, {1.f,1.f}},
-			},
+	//std::vector<Mesh> meshes_world
+	//{
+	//	Mesh{
+	//		{ // Vertices
+	//			Vertex{ {-3.f, 3.f, -2.f}, ColorRGB{colors::White}, {0.f,0.f} },
+	//			Vertex{ {0.f, 3.f, -2.f}, ColorRGB{colors::White}, {0.5f,0.f} },
+	//			Vertex{ {3.f, 3.f, -2.f}, ColorRGB{colors::White}, {1.f,0.f}},
+	//			Vertex{ {-3.f, 0.f, -2.f}, ColorRGB{colors::White}, {0.f,0.5f} },
+	//			Vertex{ {0.f, 0.f, -2.f}, ColorRGB{colors::White}, {0.5f,0.5f} },
+	//			Vertex{ {3.f, 0.f, -2.f}, ColorRGB{colors::White}, {1.f,0.5f}},
+	//			Vertex{ {-3.f, -3.f, -2.f}, ColorRGB{colors::White}, {0,1.f} },
+	//			Vertex{ {0.f, -3.f, -2.f}, ColorRGB{colors::White}, {0.5f,1.f} },
+	//			Vertex{ {3.f, -3.f, -2.f} , ColorRGB{colors::White}, {1.f,1.f}},
+	//		},
 
-			//{ // Indices ( TriangleList )
-			//	3, 0, 1,	1, 4, 3,   4, 1, 2,
-			//	2, 5, 4,	6, 3, 4,	4, 7, 6,
-			//	7, 4, 5,	5, 8, 7
-			//},
-			{ // Indices ( TriangleStrip )
-				3, 0, 4, 1, 5, 2,
-				2, 6,
-				6, 3, 7, 4, 8, 5
-			},
+	//		//{ // Indices ( TriangleList )
+	//		//	3, 0, 1,	1, 4, 3,   4, 1, 2,
+	//		//	2, 5, 4,	6, 3, 4,	4, 7, 6,
+	//		//	7, 4, 5,	5, 8, 7
+	//		//},
+	//		{ // Indices ( TriangleStrip )
+	//			3, 0, 4, 1, 5, 2,
+	//			2, 6,
+	//			6, 3, 7, 4, 8, 5
+	//		},
 
-			PrimitiveTopology::TriangleStrip
-		}
-	};
+	//		PrimitiveTopology::TriangleStrip
+	//	}
+	//};
 
 
-	// *** PROJECTION STAGE ***
-	// Transform the vector with the World Space vertices to NDC space vertices
-	std::vector<Vertex> vertices_ndc{};
-	VertexTransformationFunction(meshes_world, vertices_ndc);
+	//// *** PROJECTION STAGE ***
+	//// Transform the vector with the World Space vertices to NDC space vertices
+	//std::vector<Vertex> vertices_ndc{};
+	//VertexTransformationFunction_W2_Part1(meshes_world, vertices_ndc);
 
-	// *** RASTERIZATION STAGE ***
-	// Convert coordinates from NDC to Screen Space 
-	std::vector<Vertex> vertices_ssv{};
-	vertices_ssv.reserve(vertices_ndc.size());
-	Vertex screenSpaceVertex{};
-	for (const Vertex& vertex : vertices_ndc)
-	{
-		screenSpaceVertex.position.x = ((vertex.position.x + 1) / 2) * m_Width;
-		screenSpaceVertex.position.y = ((1 - vertex.position.y) / 2) * m_Height;
-		screenSpaceVertex.position.z = vertex.position.z;
-		screenSpaceVertex.color = vertex.color;
-		screenSpaceVertex.uv = vertex.uv;
-		vertices_ssv.emplace_back(screenSpaceVertex);
-	}
+	//// *** RASTERIZATION STAGE ***
+	//// Convert coordinates from NDC to Screen Space 
+	//std::vector<Vertex> vertices_ssv{};
+	//vertices_ssv.reserve(vertices_ndc.size());
+	//Vertex screenSpaceVertex{};
+	//for (const Vertex& vertex : vertices_ndc)
+	//{
+	//	screenSpaceVertex.position.x = ((vertex.position.x + 1) / 2) * m_Width;
+	//	screenSpaceVertex.position.y = ((1 - vertex.position.y) / 2) * m_Height;
+	//	screenSpaceVertex.position.z = vertex.position.z;
+	//	screenSpaceVertex.color = vertex.color;
+	//	screenSpaceVertex.uv = vertex.uv;
+	//	vertices_ssv.emplace_back(screenSpaceVertex);
+	//}
 
-	std::vector<Uint32> meshes_indices{ meshes_world.at(0).indices };
+	//std::vector<Uint32> meshes_indices{ meshes_world.at(0).indices };
 
-	if (meshes_world.at(0).primitiveTopology == PrimitiveTopology::TriangleList)
-	{
-		// Loop through all triangles ( Every 3 indeces is one triangle )
-		for (size_t triangleIdx{ 0 }; triangleIdx < meshes_indices.size(); triangleIdx += 3)
-		{
-			RenderPixel(vertices_ssv, meshes_indices, triangleIdx);
-		}
-	}
-	else
-	{
-		// TriangleStrip Mode
-		// Loop through all triangles ( Loop shifting varies depending on our PrimitiveTopology mode )
-		for (size_t triangleIdx{ 0 }; triangleIdx + 2 < meshes_indices.size(); ++triangleIdx)
-		{
-			if (triangleIdx % 2 != 0)
-			{
-				// Odd triangle -> Swap the last two vertices
-				std::swap(meshes_indices[triangleIdx + 1], meshes_indices[triangleIdx + 2]);
-			}
+	//if (meshes_world.at(0).primitiveTopology == PrimitiveTopology::TriangleList)
+	//{
+	//	// Loop through all triangles ( Every 3 indeces is one triangle )
+	//	for (size_t triangleIdx{ 0 }; triangleIdx < meshes_indices.size(); triangleIdx += 3)
+	//	{
+	//		RenderPixel(vertices_ssv, meshes_indices, triangleIdx);
+	//	}
+	//}
+	//else
+	//{
+	//	// TriangleStrip Mode
+	//	// Loop through all triangles ( Loop shifting varies depending on our PrimitiveTopology mode )
+	//	for (size_t triangleIdx{ 0 }; triangleIdx + 2 < meshes_indices.size(); ++triangleIdx)
+	//	{
+	//		if (triangleIdx % 2 != 0)
+	//		{
+	//			// Odd triangle -> Swap the last two vertices
+	//			std::swap(meshes_indices[triangleIdx + 1], meshes_indices[triangleIdx + 2]);
+	//		}
 
-			// If no surface area ( Two identical indeces ) then we are in a degenerate triangle
-			if (meshes_indices[triangleIdx] == meshes_indices[triangleIdx + 1] ||
-				meshes_indices[triangleIdx + 1] == meshes_indices[triangleIdx + 2]
-				|| meshes_indices[triangleIdx] == meshes_indices[triangleIdx + 2])
-			{
-				if (triangleIdx % 2 != 0)
-				{
-					// Swap back to original
-					std::swap(meshes_indices[triangleIdx + 1], meshes_indices[triangleIdx + 2]);
-				}
-				// Degenerate triangle -> Go next one
-				continue;
-			}
+	//		// If no surface area ( Two identical indeces ) then we are in a degenerate triangle
+	//		if (meshes_indices[triangleIdx] == meshes_indices[triangleIdx + 1] ||
+	//			meshes_indices[triangleIdx + 1] == meshes_indices[triangleIdx + 2]
+	//			|| meshes_indices[triangleIdx] == meshes_indices[triangleIdx + 2])
+	//		{
+	//			if (triangleIdx % 2 != 0)
+	//			{
+	//				// Swap back to original
+	//				std::swap(meshes_indices[triangleIdx + 1], meshes_indices[triangleIdx + 2]);
+	//			}
+	//			// Degenerate triangle -> Go next one
+	//			continue;
+	//		}
 
-			RenderPixel(vertices_ssv, meshes_indices, triangleIdx);
+	//		RenderPixel(vertices_ssv, meshes_indices, triangleIdx);
 
-			if (triangleIdx % 2 != 0)
-			{
-				// Swap back to original vertices
-				std::swap(meshes_indices[triangleIdx + 1], meshes_indices[triangleIdx + 2]);
-			}
-		}
-	}
+	//		if (triangleIdx % 2 != 0)
+	//		{
+	//			// Swap back to original vertices
+	//			std::swap(meshes_indices[triangleIdx + 1], meshes_indices[triangleIdx + 2]);
+	//		}
+	//	}
+	//}
 }
 
 inline void Renderer::Render_W2_Part3()
@@ -840,69 +843,186 @@ inline void Renderer::Render_W2_Part3()
 
 	// *** PROJECTION STAGE ***
 	// Transform the vector with the World Space vertices to NDC space vertices
-	std::vector<Vertex> vertices_ndc{};
-	VertexTransformationFunction(meshes_world, vertices_ndc);
+	VertexTransformationFunction_W2(meshes_world);
 
 	// *** RASTERIZATION STAGE ***
-	// Convert coordinates from NDC to Screen Space 
-	std::vector<Vertex> vertices_ssv{};
-	vertices_ssv.reserve(vertices_ndc.size());
-	Vertex screenSpaceVertex{};
-	for (const Vertex& vertex : vertices_ndc)
+	
+	for (auto& mesh : meshes_world)
 	{
-		screenSpaceVertex.position.x = ((vertex.position.x + 1) / 2) * m_Width;
-		screenSpaceVertex.position.y = ((1 - vertex.position.y) / 2) * m_Height;
-		screenSpaceVertex.position.z = vertex.position.z;
-		screenSpaceVertex.color = vertex.color;
-		screenSpaceVertex.uv = vertex.uv;
-		vertices_ssv.emplace_back(screenSpaceVertex);
-	}
-
-	std::vector<Uint32> meshes_indices{ meshes_world.at(0).indices };
-
-	if (meshes_world.at(0).primitiveTopology == PrimitiveTopology::TriangleList)
-	{
-		// Loop through all triangles ( Every 3 indeces is one triangle )
-		for (size_t triangleIdx{ 0 }; triangleIdx < meshes_indices.size(); triangleIdx += 3)
+		// Convert coordinates from NDC to Screen Space 
+		std::vector<Vertex> vertices_ssv{};
+		vertices_ssv.reserve(mesh.vertices.size());
+		Vertex screenSpaceVertex{};
+		for (const Vertex& vertex : mesh.vertices)
 		{
-			RenderPixel(vertices_ssv, meshes_indices, triangleIdx);
+			screenSpaceVertex.position.x = ((vertex.position.x + 1) / 2) * m_Width;
+			screenSpaceVertex.position.y = ((1 - vertex.position.y) / 2) * m_Height;
+			screenSpaceVertex.position.z = vertex.position.z;
+			screenSpaceVertex.color = vertex.color;
+			screenSpaceVertex.uv = vertex.uv;
+			vertices_ssv.emplace_back(screenSpaceVertex);
 		}
-	}
-	else
-	{
-		// TriangleStrip Mode
-		// Loop through all triangles ( Loop shifting varies depending on our PrimitiveTopology mode )
-		for (size_t triangleIdx{ 0 }; triangleIdx + 2 < meshes_indices.size(); ++triangleIdx)
-		{
-			if (triangleIdx % 2 != 0)
-			{
-				// Odd triangle -> Swap the last two vertices
-				std::swap(meshes_indices[triangleIdx + 1], meshes_indices[triangleIdx + 2]);
-			}
 
-			// If no surface area ( Two identical indeces ) then we are in a degenerate triangle
-			if (meshes_indices[triangleIdx] == meshes_indices[triangleIdx + 1] ||
-				meshes_indices[triangleIdx + 1] == meshes_indices[triangleIdx + 2]
-				|| meshes_indices[triangleIdx] == meshes_indices[triangleIdx + 2])
+		std::vector<Uint32> meshes_indices{ mesh.indices };
+
+		if (mesh.primitiveTopology == PrimitiveTopology::TriangleList)
+		{
+			// Loop through all triangles ( Every 3 indeces is one triangle )
+			for (size_t triangleIdx{ 0 }; triangleIdx < meshes_indices.size(); triangleIdx += 3)
+			{
+				RenderPixel(vertices_ssv, meshes_indices, triangleIdx);
+			}
+		}
+		else
+		{
+			// TriangleStrip Mode
+			// Loop through all triangles ( Loop shifting varies depending on our PrimitiveTopology mode )
+			for (size_t triangleIdx{ 0 }; triangleIdx + 2 < meshes_indices.size(); ++triangleIdx)
 			{
 				if (triangleIdx % 2 != 0)
 				{
-					// Swap back to original
+					// Odd triangle -> Swap the last two vertices
 					std::swap(meshes_indices[triangleIdx + 1], meshes_indices[triangleIdx + 2]);
 				}
-				// Degenerate triangle -> Go next one
-				continue;
-			}
 
-			RenderPixel(vertices_ssv, meshes_indices, triangleIdx);
+				// If no surface area ( Two identical indeces ) then we are in a degenerate triangle
+				if (meshes_indices[triangleIdx] == meshes_indices[triangleIdx + 1] ||
+					meshes_indices[triangleIdx + 1] == meshes_indices[triangleIdx + 2]
+					|| meshes_indices[triangleIdx] == meshes_indices[triangleIdx + 2])
+				{
+					if (triangleIdx % 2 != 0)
+					{
+						// Swap back to original
+						std::swap(meshes_indices[triangleIdx + 1], meshes_indices[triangleIdx + 2]);
+					}
+					// Degenerate triangle -> Go next one
+					continue;
+				}
 
-			if (triangleIdx % 2 != 0)
-			{
-				// Swap back to original vertices
-				std::swap(meshes_indices[triangleIdx + 1], meshes_indices[triangleIdx + 2]);
+				RenderPixel(vertices_ssv, meshes_indices, triangleIdx);
+
+				if (triangleIdx % 2 != 0)
+				{
+					// Swap back to original vertices
+					std::swap(meshes_indices[triangleIdx + 1], meshes_indices[triangleIdx + 2]);
+				}
 			}
 		}
 	}
+	
+}
+
+
+inline void Renderer::Render_W3()
+{
+	std::vector<MeshWorld> meshes_world
+	{
+		MeshWorld{
+			{ // Vertices
+				Vertex{ {-3.f, 3.f, -2.f}, ColorRGB{colors::White}, {0.f,0.f} },
+				Vertex{ {0.f, 3.f, -2.f}, ColorRGB{colors::White}, {0.5f,0.f} },
+				Vertex{ {3.f, 3.f, -2.f}, ColorRGB{colors::White}, {1.f,0.f}},
+				Vertex{ {-3.f, 0.f, -2.f}, ColorRGB{colors::White}, {0.f,0.5f} },
+				Vertex{ {0.f, 0.f, -2.f}, ColorRGB{colors::White}, {0.5f,0.5f} },
+				Vertex{ {3.f, 0.f, -2.f}, ColorRGB{colors::White}, {1.f,0.5f}},
+				Vertex{ {-3.f, -3.f, -2.f}, ColorRGB{colors::White}, {0,1.f} },
+				Vertex{ {0.f, -3.f, -2.f}, ColorRGB{colors::White}, {0.5f,1.f} },
+				Vertex{ {3.f, -3.f, -2.f} , ColorRGB{colors::White}, {1.f,1.f}},
+			},
+
+			//{ // Indices ( TriangleList )
+			//	3, 0, 1,	1, 4, 3,   4, 1, 2,
+			//	2, 5, 4,	6, 3, 4,	4, 7, 6,
+			//	7, 4, 5,	5, 8, 7
+			//},
+			{ // Indices ( TriangleStrip )
+				3, 0, 4, 1, 5, 2,
+				2, 6,
+				6, 3, 7, 4, 8, 5
+			},
+
+			PrimitiveTopology::TriangleStrip
+		}
+	};
+
+
+	for (auto& mesh : meshes_world)
+	{
+		// 1º Move to WorldMatrix
+		mesh.UpdateTransforms();
+	}
+
+	// PROJECTION STAGE 
+	std::vector<Vertex_Out> vertices_ndc{};
+	VertexTransformationFunction_W3(meshes_world, vertices_ndc);
+
+
+	// FRUSTRUM CULLING
+
+	// *** RASTERIZATION STAGE ***
+	for (auto& mesh : meshes_world)
+	{
+		// Convert coordinates from NDC to Screen Space 
+		std::vector<Vertex> vertices_ssv{};
+		vertices_ssv.reserve(vertices_ndc.size());
+		Vertex screenSpaceVertex{};
+		for (const Vertex_Out& vertex : vertices_ndc)
+		{
+			screenSpaceVertex.position.x = ((vertex.position.x + 1) / 2) * m_Width;
+			screenSpaceVertex.position.y = ((1 - vertex.position.y) / 2) * m_Height;
+			screenSpaceVertex.position.z = vertex.position.z;
+			screenSpaceVertex.color = vertex.color;
+			screenSpaceVertex.uv = vertex.uv;
+			vertices_ssv.emplace_back(screenSpaceVertex);
+		}
+
+		std::vector<Uint32> meshes_indices{ meshes_world.at(0).indices };
+
+		if (meshes_world.at(0).primitiveTopology == PrimitiveTopology::TriangleList)
+		{
+			// Loop through all triangles ( Every 3 indeces is one triangle )
+			for (size_t triangleIdx{ 0 }; triangleIdx < meshes_indices.size(); triangleIdx += 3)
+			{
+				RenderPixel(vertices_ssv, meshes_indices, triangleIdx);
+			}
+		}
+		else
+		{
+			// TriangleStrip Mode
+			// Loop through all triangles ( Loop shifting varies depending on our PrimitiveTopology mode )
+			for (size_t triangleIdx{ 0 }; triangleIdx + 2 < meshes_indices.size(); ++triangleIdx)
+			{
+				if (triangleIdx % 2 != 0)
+				{
+					// Odd triangle -> Swap the last two vertices
+					std::swap(meshes_indices[triangleIdx + 1], meshes_indices[triangleIdx + 2]);
+				}
+
+				// If no surface area ( Two identical indeces ) then we are in a degenerate triangle
+				if (meshes_indices[triangleIdx] == meshes_indices[triangleIdx + 1] ||
+					meshes_indices[triangleIdx + 1] == meshes_indices[triangleIdx + 2]
+					|| meshes_indices[triangleIdx] == meshes_indices[triangleIdx + 2])
+				{
+					if (triangleIdx % 2 != 0)
+					{
+						// Swap back to original
+						std::swap(meshes_indices[triangleIdx + 1], meshes_indices[triangleIdx + 2]);
+					}
+					// Degenerate triangle -> Go next one
+					continue;
+				}
+
+				RenderPixel(vertices_ssv, meshes_indices, triangleIdx);
+
+				if (triangleIdx % 2 != 0)
+				{
+					// Swap back to original vertices
+					std::swap(meshes_indices[triangleIdx + 1], meshes_indices[triangleIdx + 2]);
+				}
+			}
+		}
+	}
+
 }
 
 void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex>& vertices_out) const
@@ -932,33 +1052,74 @@ void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_
 	}
 }
 
-void Renderer::VertexTransformationFunction(const std::vector<Mesh>& meshes_in, std::vector<Vertex>& vertices_out) const
+void Renderer::VertexTransformationFunction_W2(std::vector<Mesh>& meshes_in) const
 {
 	Vertex viewSpaceVertex{};
 	Vertex projectedVertex{};
-	vertices_out.reserve(meshes_in.at(0).vertices.size());
-	for (const auto& vertex : meshes_in.at(0).vertices)
+	std::vector<Vertex> vertices;
+	for (auto& mesh : meshes_in)
 	{
-		// Multiply each vertex with the ViewMatrix -> Transform to View(Space)
-		viewSpaceVertex.position = m_Camera.viewMatrix.TransformPoint(vertex.position);
+		for (const auto& vertex : mesh.vertices)
+		{
+			// Multiply each vertex with the ViewMatrix -> Transform to View(Space)
+			viewSpaceVertex.position = m_Camera.viewMatrix.TransformPoint(vertex.position);
 
-		// Vertices are not in NDC -> Transform them to NDC(Space)
-		// ... Apply Perspective Divide to each projected point
-		projectedVertex.position.x = viewSpaceVertex.position.x / viewSpaceVertex.position.z;
-		projectedVertex.position.y = viewSpaceVertex.position.y / viewSpaceVertex.position.z;
-		projectedVertex.position.z = viewSpaceVertex.position.z;
+			// Vertices are not in NDC -> Transform them to NDC(Space)
+			// ... Apply Perspective Divide to each projected point
+			projectedVertex.position.x = viewSpaceVertex.position.x / viewSpaceVertex.position.z;
+			projectedVertex.position.y = viewSpaceVertex.position.y / viewSpaceVertex.position.z;
+			projectedVertex.position.z = viewSpaceVertex.position.z;
 
-		// ... Apply Camera Settings & Screen size
-		projectedVertex.position.x = projectedVertex.position.x / (m_Camera.fov * m_AspectRatio);
-		projectedVertex.position.y = projectedVertex.position.y / m_Camera.fov;
-		projectedVertex.color = vertex.color;
-		projectedVertex.uv = vertex.uv;
+			// ... Apply Camera Settings & Screen size
+			projectedVertex.position.x = projectedVertex.position.x / (m_Camera.fov * m_AspectRatio);
+			projectedVertex.position.y = projectedVertex.position.y / m_Camera.fov;
+			projectedVertex.color = vertex.color;
+			projectedVertex.uv = vertex.uv;
 
-		// Now our vertex is in NDC(Space)
-		vertices_out.emplace_back(projectedVertex);
+			// Now our vertex is in NDC(Space)
+			//mesh.vertices_out.emplace_back(projectedVertex);
+			vertices.emplace_back(projectedVertex);
+		}	
+
+		mesh.vertices = vertices;
+		vertices.clear();
 	}
+	
 }
 
+void Renderer::VertexTransformationFunction_W3(std::vector<MeshWorld>& meshes_in, std::vector<Vertex_Out>& vertices_out) const
+{
+	Vector4 worldViewProjectionVertex{};
+	Vertex_Out vertexNDC{};
+
+	for (auto& mesh : meshes_in)
+	{
+		// Same matrix for each mesh
+		Matrix worldViewProjectionMatrix{ mesh.worldMatrix * m_Camera.viewMatrix * m_Camera.projectionMatrix };
+		mesh.vertices_out.reserve(mesh.vertices.size());
+
+		for (const auto& vertex : mesh.vertices)
+		{
+			Vector4 vertex4{ vertex.position.x, vertex.position.y, vertex.position.z, 1 };
+			worldViewProjectionVertex = worldViewProjectionMatrix.TransformPoint(vertex4);
+
+			// PERSPECTIVE DIVIDE
+			// Vertices are not in NDC -> Transform them to NDC(Space)
+			// ... Apply Perspective Divide to each projected point
+			vertexNDC.position.x = worldViewProjectionVertex.x / worldViewProjectionVertex.w;
+			vertexNDC.position.y = worldViewProjectionVertex.y / worldViewProjectionVertex.w;
+			vertexNDC.position.z = worldViewProjectionVertex.z / worldViewProjectionVertex.w;
+			vertexNDC.position.w = 1 / worldViewProjectionVertex.w;
+			vertexNDC.uv = vertex.uv;
+			vertexNDC.color = vertex.color;
+
+			mesh.vertices_out.emplace_back(vertexNDC);
+			//vertices_out.emplace_back(vertexNDC);
+		}
+	}
+
+	
+}
 
 inline void Renderer::RenderPixel(const std::vector<dae::Vertex>& vertices_ssv, const std::vector<uint32_t>& meshes_indices,
 	size_t triangleIdx) const

@@ -14,7 +14,9 @@ namespace dae
 
 		Camera(const Vector3& _origin, float _fovAngle):
 			origin{_origin},
-			fovAngle{_fovAngle}
+			fovAngle{_fovAngle},
+			near_plane{ 0.0001f},
+			far_plane{ 1000.f }
 		{
 		}
 
@@ -22,6 +24,9 @@ namespace dae
 		Vector3 origin{};
 		float fovAngle{90.f};
 		float fov{ tanf((fovAngle * TO_RADIANS) / 2.f) };
+		float aspectRatio{};
+		const float near_plane{ 0.0001f };
+		const float far_plane{ 1000.f };
 
 		Vector3 forward{Vector3::UnitZ};
 		Vector3 up{Vector3::UnitY};
@@ -37,13 +42,16 @@ namespace dae
 
 		Matrix invViewMatrix{};			// Is just ONB ( Camera to World Space )
 		Matrix viewMatrix{};			// World space to Camera space ( Inverse of the ONB )
+		Matrix projectionMatrix{};
 
-		void Initialize(float _fovAngle = 90.f, Vector3 _origin = {0.f,0.f,0.f})
+		void Initialize(float _aspectRatio, float _fovAngle = 90.f, Vector3 _origin = {0.f,0.f,0.f})
 		{
 			fovAngle = _fovAngle;
 			fov = tanf((fovAngle * TO_RADIANS) / 2.f);
 
 			origin = _origin;
+
+			aspectRatio = _aspectRatio;
 		}
 
 		void CalculateViewMatrix()
@@ -92,6 +100,17 @@ namespace dae
 
 			//ProjectionMatrix => Matrix::CreatePerspectiveFovLH(...) [not implemented yet]
 			//DirectX Implementation => https://learn.microsoft.com/en-us/windows/win32/direct3d9/d3dxmatrixperspectivefovlh
+
+			// Map z coord between [0, 1]
+			float A{ far_plane / (far_plane - near_plane) };
+			float B{ -(far_plane * near_plane)/ (far_plane - near_plane) };
+
+			projectionMatrix[0][0] = 1 / (aspectRatio * fov);
+			projectionMatrix[1][1] = 1 / fov;
+			projectionMatrix[2][2] = A + B;		// Z mapped between [0, 1]
+			projectionMatrix[2][3] = 1;			// Keep the original z value from the vertex to be used in the perspective divide
+												// Store it at the w component from the matrix
+
 		}
 
 		void Update(Timer* pTimer)
