@@ -107,7 +107,7 @@ namespace dae
 
 			projectionMatrix[0][0] = 1 / (aspectRatio * fov);
 			projectionMatrix[1][1] = 1 / fov;
-			projectionMatrix[2][2] = A + B;		// Z mapped between [0, 1]
+			projectionMatrix[2][2] = A + B;		// Map Z coord so it is in the [0, 1] range
 			projectionMatrix[2][3] = 1;			// Keep the original z value from the vertex to be used in the perspective divide
 												// Store it at the w component from the matrix
 
