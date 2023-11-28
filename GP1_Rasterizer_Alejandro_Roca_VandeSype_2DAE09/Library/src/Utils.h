@@ -5,7 +5,7 @@
 #include "DataTypes.h"
 #include <iostream>
 
-#define DISABLE_OBJ
+//#define DISABLE_OBJ
 
 namespace dae
 {

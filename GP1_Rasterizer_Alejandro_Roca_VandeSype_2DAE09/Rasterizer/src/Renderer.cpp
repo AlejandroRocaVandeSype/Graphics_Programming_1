@@ -25,7 +25,8 @@ Renderer::Renderer(SDL_Window* pWindow) :
 	//m_backgroundColor = SDL_MapRGB(m_pBackBuffer->format, 100, 100, 100);
 
 	// Load texture from the file
-	m_pTexture = Texture::LoadFromFile("Resources/uv_grid_2.png");
+	//m_pTexture = Texture::LoadFromFile("Resources/uv_grid_2.png");
+	m_pTexture = Texture::LoadFromFile("Resources/tuktuk.png");
 
 	// Create the depth buffer with the amount of pixels
 	m_totalPixels = m_Width * m_Height;
@@ -34,9 +35,16 @@ Renderer::Renderer(SDL_Window* pWindow) :
 	m_AspectRatio = m_Width / static_cast<float>(m_Height);
 
 	//Initialize Camera
-	m_Camera.Initialize(m_AspectRatio, 60.f, { .0f,.0f,-10.f });
+	m_Camera.Initialize(m_AspectRatio, 60.f, { .0f,5.f,-30.f });
 
+
+	m_TuktukMesh.primitiveTopology = PrimitiveTopology::TriangleList;
+	Utils::ParseOBJ("Resources/tuktuk.obj", m_TuktukMesh.vertices, m_TuktukMesh.indices);
 	
+	// World ( Where my meshes are gonna be placed) - View ( Move my meshes to be oriented towards the camera) -
+	// Projection ( Squash them for the NDC)  --> Rasterize process -> stretch my pixels
+
+	// Now pixel shader. Our previous vertices_out become vertices_in for the pixel shader
 }
 
 Renderer::~Renderer()
@@ -48,6 +56,9 @@ Renderer::~Renderer()
 void Renderer::Update(Timer* pTimer)
 {
 	m_Camera.Update(pTimer);
+	m_TuktukMesh.RotateY(PI_DIV_2 * pTimer->GetTotal());
+	m_TuktukMesh.UpdateTransforms();
+
 }
 
 void Renderer::Render()
@@ -72,7 +83,8 @@ void Renderer::Render()
 	//Render_W2_Part2();			// Textures & Vertex Attributes
 	//Render_W2_Part3();
 
-	Render_W3();
+	//Render_W3();				// Only square with Texture
+	Render_W3_Part2();			// With TukTuk
 
 	//@END
 	//Update SDL Surface
@@ -954,103 +966,132 @@ inline void Renderer::Render_W3()
 
 	// PROJECTION STAGE 
 	VertexTransformationFunction_W3(meshes_world);
-	
+
+	// *** RASTERIZATION STAGE ***
 	for (auto& mesh : meshes_world)
 	{
-		std::vector<Uint32> meshes_indices{};
+		// To do the conversion from NDC to raster space only once per mesh
+		bool isNewMesh{ true };
+		std::vector<Vertex_Out> vertices_ssv{};
 
 		// FRUSTRUM CULLING
 		// Ignore triangles that are outside the frustum
-		for (size_t i = 0; i < mesh.indices.size(); i += 3) 
+		for (size_t triangleIdx{ 0 }; triangleIdx < mesh.indices.size(); triangleIdx += 3)
 		{
 			// Check if any vertex of the triangle is inside the frustum
-			bool keepTriangle = false;
+			bool keepTriangle = true;
 
-			for (int j = 0; j < 3; ++j) 
+			for (int j = 0; j < 3; ++j)
 			{
-				const Vertex_Out& vertex = mesh.vertices_out[mesh.indices[i + j]];
-
-				if (!(vertex.position.x < -1.f || vertex.position.x > 1.f ||
-					vertex.position.y < -1.f || vertex.position.y > 1.f)) 
+				const Vertex_Out& vertex = mesh.vertices_out[mesh.indices[triangleIdx + j]];
+				if (vertex.position.x < -1.f || vertex.position.x > 1.f ||
+					vertex.position.y < -1.f || vertex.position.y > 1.f || vertex.position.z < -1.f ||
+					vertex.position.z > 1.f)
 				{
-					keepTriangle = true;
-					break;  // No need to check further if any vertex is inside
+					// OUTSIDE frustrum -> Ignore triangle
+					keepTriangle = false;
+					break;
 				}
 			}
 
-			// If any vertex is inside, keep the entire triangle
-			if (keepTriangle) 
+			if (!keepTriangle)
+				continue; // At least one vertex is outside frustrum -> Go to next triangle
+
+
+			// Vertices from this triangle INSIDE THE FRUSTRUM
+			if (isNewMesh == true)
 			{
-				if (mesh.primitiveTopology == PrimitiveTopology::TriangleList)
+				// Convert coordinates from NDC to Screen/Screen Space 
+				vertices_ssv.reserve(mesh.vertices_out.size());
+				Vertex_Out screenSpaceVertex{};
+				for (const Vertex_Out& vertex : mesh.vertices_out)
 				{
-					meshes_indices.emplace_back(mesh.indices[i]);
-					meshes_indices.emplace_back(mesh.indices[i + 1]);
-					meshes_indices.emplace_back(mesh.indices[i + 2]);
+
+					screenSpaceVertex.position.x = ((vertex.position.x + 1) / 2) * m_Width;
+					screenSpaceVertex.position.y = ((1 - vertex.position.y) / 2) * m_Height;
+					screenSpaceVertex.position.z = vertex.position.z;
+					screenSpaceVertex.position.w = vertex.position.w;
+					screenSpaceVertex.color = vertex.color;
+					screenSpaceVertex.uv = vertex.uv;
+					vertices_ssv.emplace_back(screenSpaceVertex);
 				}
+
+				// Dont convert again vertices to raster space for this mesh. Only for a different mesh
+				isNewMesh = false;
 			}
+
+			RenderPixel_W3(vertices_ssv, mesh.indices, triangleIdx);
+
 		}
+	}
 
-		// *** RASTERIZATION STAGE ***
-		// Convert coordinates from NDC to Screen/Screen Space 
+}
+
+void Renderer::Render_W3_Part2()
+{
+
+	std::vector<MeshWorld> meshes_world;
+	meshes_world.emplace_back(m_TuktukMesh);
+
+
+	// PROJECTION STAGE 
+	VertexTransformationFunction_W3(meshes_world);
+
+	// *** RASTERIZATION STAGE ***
+	for (auto& mesh : meshes_world)
+	{
+		// To do the conversion from NDC to raster space only once per mesh
+		bool isNewMesh{ true };
 		std::vector<Vertex_Out> vertices_ssv{};
-		vertices_ssv.reserve(mesh.vertices_out.size());
-		Vertex_Out screenSpaceVertex{};
-		for (const Vertex_Out& vertex : mesh.vertices_out)
+
+		// FRUSTRUM CULLING
+		// Ignore triangles that are outside the frustum
+		for (size_t triangleIdx{ 0 }; triangleIdx < mesh.indices.size(); triangleIdx += 3)
 		{
+			// Check if any vertex of the triangle is inside the frustum
+			bool keepTriangle = true;
 
-			screenSpaceVertex.position.x = ((vertex.position.x + 1) / 2) * m_Width;
-			screenSpaceVertex.position.y = ((1 - vertex.position.y) / 2) * m_Height;
-			screenSpaceVertex.position.z = vertex.position.z;
-			screenSpaceVertex.position.w = vertex.position.w;
-			screenSpaceVertex.color = vertex.color;
-			screenSpaceVertex.uv = vertex.uv;
-			vertices_ssv.emplace_back(screenSpaceVertex);
-		}
-
-		//std::vector<Uint32> meshes_indices{ mesh.indices };
-
-		if (mesh.primitiveTopology == PrimitiveTopology::TriangleList)
-		{
-			// Loop through all triangles ( Every 3 indeces is one triangle )
-			for (size_t triangleIdx{ 0 }; triangleIdx < meshes_indices.size(); triangleIdx += 3)
+			for (int j = 0; j < 3; ++j)
 			{
-				RenderPixel_W3(vertices_ssv, meshes_indices, triangleIdx);
-			}
-		}
-		else
-		{
-			// TriangleStrip Mode
-			// Loop through all triangles ( Loop shifting varies depending on our PrimitiveTopology mode )
-			for (size_t triangleIdx{ 0 }; triangleIdx + 2 < meshes_indices.size(); ++triangleIdx)
-			{
-				if (triangleIdx % 2 != 0)
+				const Vertex_Out& vertex = mesh.vertices_out[mesh.indices[triangleIdx + j]];
+				if (vertex.position.x < -1.f || vertex.position.x > 1.f ||
+					vertex.position.y < -1.f || vertex.position.y > 1.f || vertex.position.z < -1.f ||
+					vertex.position.z > 1.f)
 				{
-					// Odd triangle -> Swap the last two vertices
-					std::swap(meshes_indices[triangleIdx + 1], meshes_indices[triangleIdx + 2]);
-				}
-
-				// If no surface area ( Two identical indeces ) then we are in a degenerate triangle
-				if (meshes_indices[triangleIdx] == meshes_indices[triangleIdx + 1] ||
-					meshes_indices[triangleIdx + 1] == meshes_indices[triangleIdx + 2]
-					|| meshes_indices[triangleIdx] == meshes_indices[triangleIdx + 2])
-				{
-					if (triangleIdx % 2 != 0)
-					{
-						// Swap back to original
-						std::swap(meshes_indices[triangleIdx + 1], meshes_indices[triangleIdx + 2]);
-					}
-					// Degenerate triangle -> Go next one
-					continue;
-				}
-
-				RenderPixel_W3(vertices_ssv, meshes_indices, triangleIdx);
-
-				if (triangleIdx % 2 != 0)
-				{
-					// Swap back to original vertices
-					std::swap(meshes_indices[triangleIdx + 1], meshes_indices[triangleIdx + 2]);
+					// OUTSIDE frustrum -> Ignore triangle
+					keepTriangle = false;
+					break;
 				}
 			}
+
+			if (!keepTriangle)
+				continue; // At least one vertex is outside frustrum -> Go to next triangle
+
+
+			// Vertices from this triangle INSIDE THE FRUSTRUM
+			if (isNewMesh == true)
+			{
+				// Convert coordinates from NDC to Screen/Screen Space 
+				vertices_ssv.reserve(mesh.vertices_out.size());
+				Vertex_Out screenSpaceVertex{};
+				for (const Vertex_Out& vertex : mesh.vertices_out)
+				{
+
+					screenSpaceVertex.position.x = ((vertex.position.x + 1) / 2) * m_Width;
+					screenSpaceVertex.position.y = ((1 - vertex.position.y) / 2) * m_Height;
+					screenSpaceVertex.position.z = vertex.position.z;
+					screenSpaceVertex.position.w = vertex.position.w;
+					screenSpaceVertex.color = vertex.color;
+					screenSpaceVertex.uv = vertex.uv;
+					vertices_ssv.emplace_back(screenSpaceVertex);
+				}
+
+				// Dont convert again vertices to raster space for this mesh. Only for a different mesh
+				isNewMesh = false;
+			}
+		
+			RenderPixel_W3(vertices_ssv, mesh.indices, triangleIdx);
+
 		}
 	}
 

@@ -6,6 +6,8 @@
 #include "Maths.h"
 #include "Timer.h"
 
+#include <iostream>
+
 namespace dae
 {
 	struct Camera
@@ -184,6 +186,7 @@ namespace dae
 			{
 				origin += right * movementSpeed * movementInc * deltaTime;
 			}
+
 		}
 
 		inline void UpdateRotation(float deltaTime, int mouseX, int mouseY)

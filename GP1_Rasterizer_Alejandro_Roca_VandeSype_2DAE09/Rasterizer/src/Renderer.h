@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "Camera.h"
+#include "DataTypes.h"
 
 struct SDL_Window;
 struct SDL_Surface;
@@ -51,6 +52,7 @@ namespace dae
 
 		// Week 3
 		inline void Render_W3();
+		inline void Render_W3_Part2();
 
 
 		void VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex>& vertices_out) const;
@@ -64,6 +66,8 @@ namespace dae
 			size_t triangleIdx) const;
 
 		inline ColorRGB Remap(float value, float toLow, float toHigh) const;
+
+		MeshWorld m_TuktukMesh{};
 
 		SDL_Window* m_pWindow{};
 
