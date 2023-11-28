@@ -56,7 +56,7 @@ Renderer::~Renderer()
 void Renderer::Update(Timer* pTimer)
 {
 	m_Camera.Update(pTimer);
-	m_TuktukMesh.RotateY(PI_DIV_2 * pTimer->GetTotal());
+	m_TuktukMesh.RotateY((PI_DIV_2/2.f) * pTimer->GetTotal());
 	m_TuktukMesh.UpdateTransforms();
 
 }
@@ -927,9 +927,9 @@ inline void Renderer::Render_W2_Part3()
 
 inline void Renderer::Render_W3()
 {
-	std::vector<MeshWorld> meshes_world
+	std::vector<Mesh> meshes_world
 	{
-		MeshWorld{
+		Mesh{
 			{ // Vertices
 				Vertex{ {-3.f, 3.f, -2.f}, ColorRGB{colors::White}, {0.f,0.f} },
 				Vertex{ {0.f, 3.f, -2.f}, ColorRGB{colors::White}, {0.5f,0.f} },
@@ -1030,9 +1030,8 @@ inline void Renderer::Render_W3()
 void Renderer::Render_W3_Part2()
 {
 
-	std::vector<MeshWorld> meshes_world;
+	std::vector<Mesh> meshes_world;
 	meshes_world.emplace_back(m_TuktukMesh);
-
 
 	// PROJECTION STAGE 
 	VertexTransformationFunction_W3(meshes_world);
@@ -1159,7 +1158,7 @@ void Renderer::VertexTransformationFunction_W2(std::vector<Mesh>& meshes_in) con
 	
 }
 
-void Renderer::VertexTransformationFunction_W3(std::vector<MeshWorld>& meshes_in) const
+void Renderer::VertexTransformationFunction_W3(std::vector<Mesh>& meshes_in) const
 {
 	Vector4 worldViewProjectionVertex{};
 	Vertex_Out vertexNDC{};
@@ -1186,7 +1185,6 @@ void Renderer::VertexTransformationFunction_W3(std::vector<MeshWorld>& meshes_in
 			vertexNDC.color = vertex.color;
 
 			mesh.vertices_out.emplace_back(vertexNDC);
-			//vertices_out.emplace_back(vertexNDC);
 		}
 	}
 
@@ -1429,7 +1427,7 @@ inline void Renderer::RenderPixel_W3(const std::vector<dae::Vertex_Out>& vertice
 			if (m_UseDepthBufferColor)
 			{
 				// Use depth buffer Color
-				finalColor = Remap(interpolatedDepthZ, 0.985f, 1.f);
+				finalColor = Remap(interpolatedDepthZ, 0.93f, 1.f);
 			}
 			else
 			{
@@ -1466,7 +1464,7 @@ inline void Renderer::RenderPixel_W3(const std::vector<dae::Vertex_Out>& vertice
 
 inline ColorRGB Renderer::Remap(float value, float fromLow, float fromHigh) const
 {
-	float remapped{ (value - fromLow) / (fromHigh - fromLow) };
+	float remapped = (value - fromLow) / (fromHigh - fromLow);
 	return ColorRGB{ remapped, remapped, remapped };
 }
 
