@@ -1,14 +1,4 @@
 ﻿  Renderer.cpp
-C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_Rasterizer_Alejandro_Roca_VandeSype_2DAE09\Rasterizer\src\Renderer.cpp(526,18): warning C4244: '=': conversion from 'const _Ty' to 'int', possible loss of data
-          with
-          [
-              _Ty=float
-          ]
-C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_Rasterizer_Alejandro_Roca_VandeSype_2DAE09\Rasterizer\src\Renderer.cpp(527,18): warning C4244: '=': conversion from 'const _Ty' to 'int', possible loss of data
-          with
-          [
-              _Ty=float
-          ]
 C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_Rasterizer_Alejandro_Roca_VandeSype_2DAE09\Rasterizer\src\Renderer.cpp(528,18): warning C4244: '=': conversion from 'const _Ty' to 'int', possible loss of data
           with
           [
@@ -19,48 +9,76 @@ C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-
           [
               _Ty=float
           ]
-C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_Rasterizer_Alejandro_Roca_VandeSype_2DAE09\Rasterizer\src\Renderer.cpp(1301,17): warning C4244: '=': conversion from 'const _Ty' to 'int', possible loss of data
+C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_Rasterizer_Alejandro_Roca_VandeSype_2DAE09\Rasterizer\src\Renderer.cpp(530,18): warning C4244: '=': conversion from 'const _Ty' to 'int', possible loss of data
           with
           [
               _Ty=float
           ]
-C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_Rasterizer_Alejandro_Roca_VandeSype_2DAE09\Rasterizer\src\Renderer.cpp(1302,17): warning C4244: '=': conversion from 'const _Ty' to 'int', possible loss of data
+C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_Rasterizer_Alejandro_Roca_VandeSype_2DAE09\Rasterizer\src\Renderer.cpp(531,18): warning C4244: '=': conversion from 'const _Ty' to 'int', possible loss of data
           with
           [
               _Ty=float
           ]
-C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_Rasterizer_Alejandro_Roca_VandeSype_2DAE09\Rasterizer\src\Renderer.cpp(1303,17): warning C4244: '=': conversion from 'const _Ty' to 'int', possible loss of data
+C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_Rasterizer_Alejandro_Roca_VandeSype_2DAE09\Rasterizer\src\Renderer.cpp(1221,17): warning C4244: '=': conversion from 'const _Ty' to 'int', possible loss of data
           with
           [
               _Ty=float
           ]
-C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_Rasterizer_Alejandro_Roca_VandeSype_2DAE09\Rasterizer\src\Renderer.cpp(1304,17): warning C4244: '=': conversion from 'const _Ty' to 'int', possible loss of data
+C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_Rasterizer_Alejandro_Roca_VandeSype_2DAE09\Rasterizer\src\Renderer.cpp(1222,17): warning C4244: '=': conversion from 'const _Ty' to 'int', possible loss of data
           with
           [
               _Ty=float
           ]
-C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_Rasterizer_Alejandro_Roca_VandeSype_2DAE09\Rasterizer\src\Renderer.cpp(1428,17): warning C4244: '=': conversion from 'const _Ty' to 'int', possible loss of data
+C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_Rasterizer_Alejandro_Roca_VandeSype_2DAE09\Rasterizer\src\Renderer.cpp(1223,17): warning C4244: '=': conversion from 'const _Ty' to 'int', possible loss of data
           with
           [
               _Ty=float
           ]
-C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_Rasterizer_Alejandro_Roca_VandeSype_2DAE09\Rasterizer\src\Renderer.cpp(1429,17): warning C4244: '=': conversion from 'const _Ty' to 'int', possible loss of data
+C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_Rasterizer_Alejandro_Roca_VandeSype_2DAE09\Rasterizer\src\Renderer.cpp(1224,17): warning C4244: '=': conversion from 'const _Ty' to 'int', possible loss of data
           with
           [
               _Ty=float
           ]
-C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_Rasterizer_Alejandro_Roca_VandeSype_2DAE09\Rasterizer\src\Renderer.cpp(1430,17): warning C4244: '=': conversion from 'const _Ty' to 'int', possible loss of data
+C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_Rasterizer_Alejandro_Roca_VandeSype_2DAE09\Rasterizer\src\Renderer.cpp(1348,17): warning C4244: '=': conversion from 'const _Ty' to 'int', possible loss of data
           with
           [
               _Ty=float
           ]
-C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_Rasterizer_Alejandro_Roca_VandeSype_2DAE09\Rasterizer\src\Renderer.cpp(1431,17): warning C4244: '=': conversion from 'const _Ty' to 'int', possible loss of data
+C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_Rasterizer_Alejandro_Roca_VandeSype_2DAE09\Rasterizer\src\Renderer.cpp(1349,17): warning C4244: '=': conversion from 'const _Ty' to 'int', possible loss of data
           with
           [
               _Ty=float
           ]
-  main.cpp
-  Generating Code...
+C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_Rasterizer_Alejandro_Roca_VandeSype_2DAE09\Rasterizer\src\Renderer.cpp(1350,17): warning C4244: '=': conversion from 'const _Ty' to 'int', possible loss of data
+          with
+          [
+              _Ty=float
+          ]
+C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_Rasterizer_Alejandro_Roca_VandeSype_2DAE09\Rasterizer\src\Renderer.cpp(1351,17): warning C4244: '=': conversion from 'const _Ty' to 'int', possible loss of data
+          with
+          [
+              _Ty=float
+          ]
+C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_Rasterizer_Alejandro_Roca_VandeSype_2DAE09\Rasterizer\src\Renderer.cpp(1493,17): warning C4244: '=': conversion from 'const _Ty' to 'int', possible loss of data
+          with
+          [
+              _Ty=float
+          ]
+C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_Rasterizer_Alejandro_Roca_VandeSype_2DAE09\Rasterizer\src\Renderer.cpp(1494,17): warning C4244: '=': conversion from 'const _Ty' to 'int', possible loss of data
+          with
+          [
+              _Ty=float
+          ]
+C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_Rasterizer_Alejandro_Roca_VandeSype_2DAE09\Rasterizer\src\Renderer.cpp(1495,17): warning C4244: '=': conversion from 'const _Ty' to 'int', possible loss of data
+          with
+          [
+              _Ty=float
+          ]
+C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_Rasterizer_Alejandro_Roca_VandeSype_2DAE09\Rasterizer\src\Renderer.cpp(1496,17): warning C4244: '=': conversion from 'const _Ty' to 'int', possible loss of data
+          with
+          [
+              _Ty=float
+          ]
   Rasterizer.vcxproj -> C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_Rasterizer_Alejandro_Roca_VandeSype_2DAE09\bin\x64\Debug\Rasterizer.exe
   0 File(s) copied
   0 File(s) copied

@@ -56,6 +56,11 @@ namespace dae
 			rotationTransform = Matrix::CreateRotationY(yaw);
 		}
 
+		void Translate(const Vector3& translation)
+		{
+			translationTransform = Matrix::CreateTranslation(translation);
+		}
+
 	};
 
 }

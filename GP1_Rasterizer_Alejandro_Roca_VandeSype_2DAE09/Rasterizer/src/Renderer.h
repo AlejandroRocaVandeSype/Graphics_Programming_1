@@ -64,7 +64,12 @@ namespace dae
 		inline void RenderPixel_W3(const std::vector<dae::Vertex_Out>& vertices_ssv, const std::vector<uint32_t>& meshes_indices,
 			size_t triangleIdx) const;
 
+		inline void RenderPixel_W4(const std::vector<dae::Vertex_Out>& vertices_ssv, const std::vector<uint32_t>& meshes_indices,
+			size_t triangleIdx) const;
+
 		inline ColorRGB Remap(float value, float toLow, float toHigh) const;
+
+		inline ColorRGB PixelShading(const Vertex_Out& v) const;
 
 		Mesh m_TuktukMesh{};
 
