@@ -36,7 +36,7 @@ namespace dae
 
 		bool canRotate{ true };			// To enable/disable rotations when LMB + RMB is pressed/notpressed
 		float movementSpeed{ 9.f };
-		float rotationSpeed{ 5.f };
+		float rotationSpeed{ 0.6f };
 		float movementInc{ 4.f };
 
 		float totalPitch{};

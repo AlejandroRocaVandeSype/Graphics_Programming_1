@@ -13,7 +13,14 @@ using namespace dae;
 Renderer::Renderer(SDL_Window* pWindow) :
 	m_pWindow(pWindow),
 	m_AspectRatio{ -1.f },
-	m_pTexture{ nullptr }
+	m_pDiffuseTex{ nullptr },
+	m_pNormalTex{ nullptr },
+	m_pGlossinessTex{ nullptr },
+	m_pSpecularTex{ nullptr },
+	m_useDepthBufferColor{ false },
+	m_useNormalMap { true },
+	m_stopRotation{ false },
+	m_shadingMode{ ShadingMode::Combined }
 {
 	//Initialize
 	SDL_GetWindowSize(pWindow, &m_Width, &m_Height);
@@ -27,7 +34,10 @@ Renderer::Renderer(SDL_Window* pWindow) :
 	// Load texture from the file
 	//m_pTexture = Texture::LoadFromFile("Resources/uv_grid_2.png");
 	//m_pTexture = Texture::LoadFromFile("Resources/tuktuk.png");
-	m_pTexture = Texture::LoadFromFile("Resources/vehicle_diffuse.png");
+	m_pDiffuseTex = Texture::LoadFromFile("Resources/vehicle_diffuse.png");
+	m_pNormalTex = Texture::LoadFromFile("Resources/vehicle_normal.png");
+	m_pGlossinessTex = Texture::LoadFromFile("Resources/vehicle_gloss.png");
+	m_pSpecularTex = Texture::LoadFromFile("Resources/vehicle_specular.png");
 
 	// Create the depth buffer with the amount of pixels
 	m_totalPixels = m_Width * m_Height;
@@ -39,9 +49,9 @@ Renderer::Renderer(SDL_Window* pWindow) :
 	m_Camera.Initialize(m_AspectRatio, 45.f, { 0.f,0.f, 0.f });
 
 
-	m_TuktukMesh.primitiveTopology = PrimitiveTopology::TriangleList;
-	Utils::ParseOBJ("Resources/vehicle.obj", m_TuktukMesh.vertices, m_TuktukMesh.indices);
-	m_TuktukMesh.Translate(Vector3{ 0.f, 0.f, 50.f });
+	m_mesh.primitiveTopology = PrimitiveTopology::TriangleList;
+	Utils::ParseOBJ("Resources/vehicle.obj", m_mesh.vertices, m_mesh.indices);
+	m_mesh.Translate(Vector3{ 0.f, 0.f, 50.f });
 	
 	// World ( Where my meshes are gonna be placed) - View ( Move my meshes to be oriented towards the camera) -
 	// Projection ( Squash them for the NDC)  --> Rasterize process -> stretch my pixels
@@ -52,15 +62,21 @@ Renderer::Renderer(SDL_Window* pWindow) :
 Renderer::~Renderer()
 {
 	delete[] m_pDepthBufferPixels;
-	delete m_pTexture;
+	delete m_pDiffuseTex;
+	delete m_pNormalTex;
+	delete m_pGlossinessTex;
+	delete m_pSpecularTex;
 }
 
 void Renderer::Update(Timer* pTimer)
 {
 	m_Camera.Update(pTimer);
-	m_TuktukMesh.RotateY((PI_DIV_2/ 2.f) * pTimer->GetTotal());
-	m_TuktukMesh.UpdateTransforms();
 
+	if (!m_stopRotation)
+	{
+		m_mesh.RotateY((PI_DIV_2 / 2.f) * pTimer->GetTotal());
+		m_mesh.UpdateTransforms();
+	}
 }
 
 void Renderer::Render()
@@ -1033,7 +1049,7 @@ void Renderer::Render_W3_Part2()
 {
 
 	std::vector<Mesh> meshes_world;
-	meshes_world.emplace_back(m_TuktukMesh);
+	meshes_world.emplace_back(m_mesh);
 
 	// PROJECTION STAGE 
 	VertexTransformationFunction_W3(meshes_world);
@@ -1189,10 +1205,10 @@ void Renderer::VertexTransformationFunction_W3(std::vector<Mesh>& meshes_in) con
 			vertexNDC.position.w = worldViewProjectionVertex.w;
 			vertexNDC.uv = vertex.uv;
 			vertexNDC.color = vertex.color;
-			vertexNDC.normal = mesh.worldMatrix.TransformVector(vertex.normal);
-			vertexNDC.tangent = vertex.tangent;
-			vertexNDC.viewDirection = mesh.worldMatrix.TransformPoint(vertex.position) - m_Camera.origin;	// Direction from camera to Vertex
-
+			vertexNDC.normal = mesh.worldMatrix.TransformVector(vertex.normal).Normalized();
+			vertexNDC.tangent = mesh.worldMatrix.TransformVector(vertex.tangent).Normalized();
+			vertexNDC.viewDirection = mesh.worldMatrix.TransformVector(vertex.position) - m_Camera.origin;	// Direction from camera to Vertex
+			vertexNDC.viewDirection = vertexNDC.viewDirection.Normalized();
 			mesh.vertices_out.emplace_back(vertexNDC);
 		}
 	}
@@ -1314,7 +1330,7 @@ inline void Renderer::RenderPixel(const std::vector<dae::Vertex>& vertices_ssv, 
 				+ (vertices_ssv[meshes_indices[triangleIdx + 2]].uv * w2) };*/
 
 			Vector2 uv{ (uv0 + uv1 + uv2) * interpolatedDepth };
-			finalColor = m_pTexture->Sample(uv);
+			finalColor = m_pDiffuseTex->Sample(uv);
 
 			//Update Color in Buffer
 			finalColor.MaxToOne();
@@ -1433,7 +1449,7 @@ inline void Renderer::RenderPixel_W3(const std::vector<dae::Vertex_Out>& vertice
 			// Store it
 			m_pDepthBufferPixels[pixelIndex] = interpolatedDepthZ;
 
-			if (m_UseDepthBufferColor)
+			if (m_useDepthBufferColor)
 			{
 				// Use depth buffer Color
 				finalColor = Remap(interpolatedDepthZ, 0.998f, 1.f);
@@ -1457,7 +1473,7 @@ inline void Renderer::RenderPixel_W3(const std::vector<dae::Vertex_Out>& vertice
 
 				Vector2 interpolatedUV{ (uv0 + uv1 + uv2) * interpolatedDepthW };
 			
-				finalColor = m_pTexture->Sample(interpolatedUV);
+				finalColor = m_pDiffuseTex->Sample(interpolatedUV);
 			}
 
 
@@ -1578,7 +1594,7 @@ inline void Renderer::RenderPixel_W4(const std::vector<dae::Vertex_Out>& vertice
 			// Store it
 			m_pDepthBufferPixels[pixelIndex] = interpolatedDepthZ;
 
-			if (m_UseDepthBufferColor)
+			if (m_useDepthBufferColor)
 			{
 				// Use depth buffer Color
 				finalColor = Remap(interpolatedDepthZ, 0.998f, 1.f);
@@ -1664,21 +1680,108 @@ inline void Renderer::RenderPixel_W4(const std::vector<dae::Vertex_Out>& vertice
 
 inline ColorRGB Renderer::PixelShading(const Vertex_Out& v) const
 {
-	// Direction of a directional light
-	Vector3 lightDirection = { -.577f, .577f, -.577f };
+	// Hardcoded LIGHT values
+	const Vector3 lightDirection = { .577f, -.577f, .577f }; 	// Direction of a directional light
+	const float lightIntensity = 7.0f;
+	const ColorRGB lightColor{ 1.f, 1.f, 1.f };
+	const float shihniness{ 25.f };							// Mutiply the glossiness value to get better results
 
-	float lightIntensity = 7.0f;
+	float viewAngle{};
+	if (m_useNormalMap)
+	{
+		// NORMAL MAP
+		// Create a matrix that makes us able to transform the sampled normal into the correct space
+		Vector3 binormal{ Vector3::Cross(v.normal.Normalized(), v.tangent.Normalized()) };
+		Matrix tangentSpaceAxis = Matrix{ v.tangent.Normalized(), binormal, v.normal.Normalized(), Vector3::Zero };
+
+		ColorRGB sampledNormal{ m_pNormalTex->Sample(v.uv) };
+
+		// Remap to correct range [-1, 1]
+		ColorRGB sampledNormal2 = { 2.f * sampledNormal.r - 1.f, 2.f * sampledNormal.g - 1.f, 2.f * sampledNormal.b - 1.f };
+		Vector3 sampledNormal3{ tangentSpaceAxis.TransformVector(Vector3{sampledNormal2.r, sampledNormal2.g, sampledNormal2.b}) };
+		
+		viewAngle = Vector3::Dot(sampledNormal3, -lightDirection);
+	}
+	else
+	{
+		// Don't use normal map.
+		viewAngle = Vector3::Dot(v.normal, -lightDirection);
+	}
 
 	// ** LAMBERT'S COSINE LAW ** -> Measure the OBSERVED AREA
-	const float viewAngle{ Vector3::Dot(v.normal.Normalized(), lightDirection)};
 	if (viewAngle < 0)
 		return { 0.f, 0.f, 0.f};  // If it is below 0 the point on the surface points away from the light
-				// ( It doesn't contribute for the finalColor)
+								  // ( It doesn't contribute for the finalColor)
+	
 
-	return ColorRGB{ viewAngle, viewAngle, viewAngle }; // ObservedArea Only 
+	switch (m_shadingMode)
+	{
+		case dae::Renderer::ShadingMode::ObservedArea:
+			{
+				return ColorRGB{ viewAngle, viewAngle, viewAngle }; // ObservedArea Only 
+				break;
+			}
+	
+		case dae::Renderer::ShadingMode::Diffuse:
+			{
+				// ** LIGHT SCATTERING ** based on the material from the objects from the scene
+				// Lambert Diffuse (ONLY with OA)
+				ColorRGB diffuseColor{ m_pDiffuseTex->Sample(v.uv) };
+				const float kd{ 1.0f };		// Diffuse reflection Coefficient
+				ColorRGB BRDF{ Diffuse(kd, diffuseColor)};
 
+				// Diffuse (incl OA)
+				return  (lightColor * lightIntensity) * BRDF * viewAngle;
+				break;
+			}
+	
+		case dae::Renderer::ShadingMode::Specular:
+			{
+				// LAMBERT PHONG ( ONLY with OA)
+
+				ColorRGB sampledGloss{ m_pGlossinessTex->Sample(v.uv) };
+				ColorRGB sampledSpecular{ m_pSpecularTex->Sample(v.uv) };
+
+				sampledGloss.r *= shihniness;
+				sampledGloss.g *= shihniness;
+				sampledGloss.b *= shihniness;
+
+				return  (lightColor * lightIntensity) * Phong(sampledSpecular, sampledGloss.r, lightDirection.Normalized(), v.viewDirection.Normalized(), v.normal)
+					* viewAngle;
+				
+				break;
+			}
+
+		case dae::Renderer::ShadingMode::Combined:
+			{
+				  // ** LIGHT SCATTERING ** based on the material from the objects from the scene
+					// Lambert Diffuse (ONLY with OA)
+				ColorRGB diffuseColor{ m_pDiffuseTex->Sample(v.uv) };
+				const float kd{ 1.0f };		// Diffuse reflection Coefficient
+				ColorRGB DiffuseRGB{ Diffuse(kd, diffuseColor) };
+			
+
+				// LAMBERT PHONG
+				ColorRGB sampledGloss{ m_pGlossinessTex->Sample(v.uv) };
+				ColorRGB sampledSpecular{ m_pSpecularTex->Sample(v.uv) };
+				sampledGloss.r *= shihniness;
+
+
+				ColorRGB specularRGB{ Phong(sampledSpecular, sampledGloss.r, lightDirection.Normalized(), v.viewDirection.Normalized(), v.normal) };
+
+				ColorRGB finalRGB{ DiffuseRGB + specularRGB };
+
+				// Diffuse (incl OA)
+				return  (lightColor * lightIntensity) * finalRGB * viewAngle;
+		
+				break;
+			}
+	}
 
 }
+
+
+
 
 
 inline ColorRGB Renderer::Remap(float value, float fromLow, float fromHigh) const
@@ -1691,10 +1794,91 @@ inline ColorRGB Renderer::Remap(float value, float fromLow, float fromHigh) cons
 
 void Renderer::ToggleFinalColorMode()
 {
-	m_UseDepthBufferColor = !m_UseDepthBufferColor;
+	m_useDepthBufferColor = !m_useDepthBufferColor;
+}
+
+void Renderer::ToggleNormalMapUse()
+{
+	m_useNormalMap = !m_useNormalMap;
+}
+
+void Renderer::ToggleRotation(Timer* pTimer)
+{
+	if (m_stopRotation)
+	{
+		// It was stopped already -> Continue the timer
+		pTimer->Start();
+	}
+	else
+	{
+		pTimer->Stop();
+	}
+
+	m_stopRotation = !m_stopRotation;
+	
+}
+
+void Renderer::CycleShadingMode()
+{
+	switch (m_shadingMode)
+	{
+		case dae::Renderer::ShadingMode::ObservedArea:
+			std::cout << "SHADING MODE : Diffuse " << std::endl;
+			m_shadingMode = ShadingMode::Diffuse;
+			break;
+		case dae::Renderer::ShadingMode::Diffuse:
+			std::cout << "SHADING MODE : Specular" << std::endl;
+			m_shadingMode = ShadingMode::Specular;
+			break;
+		case dae::Renderer::ShadingMode::Specular:
+			std::cout << "SHADING MODE : Combined" << std::endl;
+			m_shadingMode = ShadingMode::Combined;
+			break;
+		case dae::Renderer::ShadingMode::Combined:
+			std::cout << "SHADING MODE : Observed Area" << std::endl;
+			m_shadingMode = ShadingMode::ObservedArea;
+			break;
+	}
 }
 
 bool Renderer::SaveBufferToImage() const
 {
 	return SDL_SaveBMP(m_pBackBuffer, "Rasterizer_ColorBuffer.bmp");
 }
+
+/**
+
+	* \param ks Specular Reflection Coefficient
+	* \param exp Phong Exponent
+	* \param l Incoming (incident) Light Direction
+	 * \param v View Direction
+	* \param n Normal of the Surface
+	* \return Phong Specular Color
+*/
+inline ColorRGB Renderer::Phong(const ColorRGB& ks, float exp, const Vector3& l, const Vector3& v, const Vector3& n) const
+{
+
+	Vector3 reflect{ l - (2 * (Vector3::Dot(n, l)) * n) };
+	reflect.Normalized();
+
+	float cosAngle{ std::max(0.f, Vector3::Dot(reflect, v)) };
+
+	// Do a max to avoid negative values for the angle
+	ColorRGB specularRefl{ 
+		ks.r * (powf(cosAngle, exp)) ,
+		ks.g * (powf(cosAngle, exp)),
+		ks.b * (powf(cosAngle, exp))
+	};
+
+	return specularRefl;
+	
+}
+
+inline ColorRGB Renderer::Diffuse(float kd, const ColorRGB& cd) const
+{
+	// Reflectivity ( cd * kd ) / PI == Lambert Diffuse Color
+	return { (cd * kd) / dae::PI };
+}
+
+
+

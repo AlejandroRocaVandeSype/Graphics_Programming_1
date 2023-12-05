@@ -15,6 +15,7 @@ namespace dae
 	struct Mesh;
 	struct Vertex;
 	struct Vertex_Out;
+	struct Vector3;
 	class Timer;
 	class Scene;
 
@@ -34,7 +35,11 @@ namespace dae
 
 		bool SaveBufferToImage() const;
 
+		// Toggle Rasterizer Parameters
+		void ToggleRotation(Timer* pTimer);
 		void ToggleFinalColorMode();
+		void ToggleNormalMapUse();
+		void CycleShadingMode();
 
 	private:
 
@@ -70,8 +75,11 @@ namespace dae
 		inline ColorRGB Remap(float value, float toLow, float toHigh) const;
 
 		inline ColorRGB PixelShading(const Vertex_Out& v) const;
+		inline ColorRGB Diffuse(float kd, const ColorRGB& cd) const;
+		inline ColorRGB Phong(const ColorRGB& ks, float exp, const Vector3& l, const Vector3& v, const Vector3& n) const;
 
-		Mesh m_TuktukMesh{};
+
+		Mesh m_mesh{};
 
 		SDL_Window* m_pWindow{};
 
@@ -80,7 +88,10 @@ namespace dae
 		uint32_t* m_pBackBufferPixels{};
 		Uint32 m_backgroundColor{};
 
-		Texture* m_pTexture;
+		Texture* m_pDiffuseTex;
+		Texture* m_pNormalTex;
+		Texture* m_pSpecularTex;
+		Texture* m_pGlossinessTex;
 
 		float* m_pDepthBufferPixels{};			// Contains the Depth/Z-component from the pixels
 		Uint32 m_totalPixels{};
@@ -91,6 +102,20 @@ namespace dae
 		int m_Height{};	
 		float m_AspectRatio{};
 
-		bool m_UseDepthBufferColor{ false };
+		
+		// Toggle Rasterizer Parameters
+		bool m_useDepthBufferColor;
+		bool m_useNormalMap;
+		bool m_stopRotation;
+
+		enum class ShadingMode
+		{
+			ObservedArea,		// Lambert Cosine Law
+			Diffuse,			// Diffuse (incl OA)
+			Specular,			// Specular (incly OA)
+			Combined			// All
+		};
+
+		ShadingMode m_shadingMode;
 	};
 }

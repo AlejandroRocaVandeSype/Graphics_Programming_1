@@ -68,8 +68,10 @@ namespace dae
 		uint8_t colorR{}, colorG{}, colorB{};
 		SDL_GetRGB(pixel, m_pSurface->format, &colorR, &colorG, &colorB);
 
+
 		// Remap color to [0, 1] range and return it
 		return ColorRGB{ colorR / 255.f, colorG / 255.f, colorB / 255.f };
 		
 	}
+
 }
