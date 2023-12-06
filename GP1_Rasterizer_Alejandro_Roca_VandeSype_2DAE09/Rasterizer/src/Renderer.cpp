@@ -33,7 +33,7 @@ Renderer::Renderer(SDL_Window* pWindow) :
 
 	// Load texture from the file
 	//m_pTexture = Texture::LoadFromFile("Resources/uv_grid_2.png");
-	//m_pTexture = Texture::LoadFromFile("Resources/tuktuk.png");
+	//m_pDiffuseTex = Texture::LoadFromFile("Resources/tuktuk.png");
 	m_pDiffuseTex = Texture::LoadFromFile("Resources/vehicle_diffuse.png");
 	m_pNormalTex = Texture::LoadFromFile("Resources/vehicle_normal.png");
 	m_pGlossinessTex = Texture::LoadFromFile("Resources/vehicle_gloss.png");
@@ -46,12 +46,12 @@ Renderer::Renderer(SDL_Window* pWindow) :
 	m_AspectRatio = m_Width / static_cast<float>(m_Height);
 
 	//Initialize Camera
-	m_Camera.Initialize(m_AspectRatio, 45.f, { 0.f,0.f, 0.f });
+	m_Camera.Initialize(m_AspectRatio, 45.f, { 0.f,5.f, -65.f });
 
 
 	m_mesh.primitiveTopology = PrimitiveTopology::TriangleList;
 	Utils::ParseOBJ("Resources/vehicle.obj", m_mesh.vertices, m_mesh.indices);
-	m_mesh.Translate(Vector3{ 0.f, 0.f, 50.f });
+
 	
 	// World ( Where my meshes are gonna be placed) - View ( Move my meshes to be oriented towards the camera) -
 	// Projection ( Squash them for the NDC)  --> Rasterize process -> stretch my pixels
@@ -1053,6 +1053,7 @@ void Renderer::Render_W3_Part2()
 
 	// PROJECTION STAGE 
 	VertexTransformationFunction_W3(meshes_world);
+	
 
 	// *** RASTERIZATION STAGE ***
 	for (auto& mesh : meshes_world)
@@ -1072,7 +1073,7 @@ void Renderer::Render_W3_Part2()
 			{
 				const Vertex_Out& vertex = mesh.vertices_out[mesh.indices[triangleIdx + j]];
 				if (vertex.position.x < -1.f || vertex.position.x > 1.f ||
-					vertex.position.y < -1.f || vertex.position.y > 1.f || vertex.position.z < -1.f ||
+					vertex.position.y < -1.f || vertex.position.y > 1.f || vertex.position.z < 0.f ||
 					vertex.position.z > 1.f)
 				{
 					// OUTSIDE frustrum -> Ignore triangle
@@ -1185,6 +1186,7 @@ void Renderer::VertexTransformationFunction_W3(std::vector<Mesh>& meshes_in) con
 	Vector4 worldViewProjectionVertex{};
 	Vertex_Out vertexNDC{};
 
+	
 	for (auto& mesh : meshes_in)
 	{
 		// Same matrix for all vertices within one mesh
@@ -1598,6 +1600,8 @@ inline void Renderer::RenderPixel_W4(const std::vector<dae::Vertex_Out>& vertice
 			{
 				// Use depth buffer Color
 				finalColor = Remap(interpolatedDepthZ, 0.998f, 1.f);
+
+				
 			}
 			else
 			{
@@ -1663,8 +1667,7 @@ inline void Renderer::RenderPixel_W4(const std::vector<dae::Vertex_Out>& vertice
 
 				// PIXEL SHADING STAGE
 				finalColor = PixelShading(v);
-
-				//finalColor = m_pTexture->Sample(interpolatedUV);
+				
 			}
 
 			//Update Color in Buffer
@@ -1686,6 +1689,8 @@ inline ColorRGB Renderer::PixelShading(const Vertex_Out& v) const
 	const ColorRGB lightColor{ 1.f, 1.f, 1.f };
 	const float shihniness{ 25.f };							// Mutiply the glossiness value to get better results
 
+	const ColorRGB lightRadiance{ lightColor * lightIntensity };
+
 	float viewAngle{};
 	if (m_useNormalMap)
 	{
@@ -1697,10 +1702,10 @@ inline ColorRGB Renderer::PixelShading(const Vertex_Out& v) const
 		ColorRGB sampledNormal{ m_pNormalTex->Sample(v.uv) };
 
 		// Remap to correct range [-1, 1]
-		ColorRGB sampledNormal2 = { 2.f * sampledNormal.r - 1.f, 2.f * sampledNormal.g - 1.f, 2.f * sampledNormal.b - 1.f };
-		Vector3 sampledNormal3{ tangentSpaceAxis.TransformVector(Vector3{sampledNormal2.r, sampledNormal2.g, sampledNormal2.b}) };
+		sampledNormal = { 2.f * sampledNormal.r - 1.f, 2.f * sampledNormal.g - 1.f, 2.f * sampledNormal.b - 1.f };
+		Vector3 vSampledNormal{ tangentSpaceAxis.TransformVector(Vector3{sampledNormal.r, sampledNormal.g, sampledNormal.b}) };
 		
-		viewAngle = Vector3::Dot(sampledNormal3, -lightDirection);
+		viewAngle = Vector3::Dot(vSampledNormal, -lightDirection);
 	}
 	else
 	{
@@ -1708,7 +1713,8 @@ inline ColorRGB Renderer::PixelShading(const Vertex_Out& v) const
 		viewAngle = Vector3::Dot(v.normal, -lightDirection);
 	}
 
-	// ** LAMBERT'S COSINE LAW ** -> Measure the OBSERVED AREA
+	// ** LAMBERT'S COSINE LAW **
+	// -> Measure the OBSERVED AREA
 	if (viewAngle < 0)
 		return { 0.f, 0.f, 0.f};  // If it is below 0 the point on the surface points away from the light
 								  // ( It doesn't contribute for the finalColor)
@@ -1726,27 +1732,24 @@ inline ColorRGB Renderer::PixelShading(const Vertex_Out& v) const
 			{
 				// ** LIGHT SCATTERING ** based on the material from the objects from the scene
 				// Lambert Diffuse (ONLY with OA)
-				ColorRGB diffuseColor{ m_pDiffuseTex->Sample(v.uv) };
-				const float kd{ 1.0f };		// Diffuse reflection Coefficient
+				ColorRGB diffuseColor{ m_pDiffuseTex->Sample(v.uv) };		// cd
+				const float kd{ 1.f };										// Diffuse reflection Coefficient
 				ColorRGB BRDF{ Diffuse(kd, diffuseColor)};
 
 				// Diffuse (incl OA)
-				return  (lightColor * lightIntensity) * BRDF * viewAngle;
+				return  lightRadiance * BRDF * viewAngle;
 				break;
 			}
 	
 		case dae::Renderer::ShadingMode::Specular:
 			{
 				// LAMBERT PHONG ( ONLY with OA)
-
 				ColorRGB sampledGloss{ m_pGlossinessTex->Sample(v.uv) };
 				ColorRGB sampledSpecular{ m_pSpecularTex->Sample(v.uv) };
 
 				sampledGloss.r *= shihniness;
-				sampledGloss.g *= shihniness;
-				sampledGloss.b *= shihniness;
 
-				return  (lightColor * lightIntensity) * Phong(sampledSpecular, sampledGloss.r, lightDirection.Normalized(), v.viewDirection.Normalized(), v.normal)
+				return  lightRadiance * Phong(sampledSpecular, sampledGloss.r, lightDirection.Normalized(), v.viewDirection.Normalized(), -v.normal.Normalized())
 					* viewAngle;
 				
 				break;
@@ -1767,12 +1770,12 @@ inline ColorRGB Renderer::PixelShading(const Vertex_Out& v) const
 				sampledGloss.r *= shihniness;
 
 
-				ColorRGB specularRGB{ Phong(sampledSpecular, sampledGloss.r, lightDirection.Normalized(), v.viewDirection.Normalized(), v.normal) };
+				ColorRGB specularRGB{ Phong(sampledSpecular, sampledGloss.r, lightDirection.Normalized(),v.viewDirection.Normalized(), v.normal.Normalized()) };
 
 				ColorRGB finalRGB{ DiffuseRGB + specularRGB };
 
 				// Diffuse (incl OA)
-				return  (lightColor * lightIntensity) * finalRGB * viewAngle;
+				return  lightRadiance * finalRGB * viewAngle;
 		
 				break;
 			}
@@ -1808,6 +1811,7 @@ void Renderer::ToggleRotation(Timer* pTimer)
 	{
 		// It was stopped already -> Continue the timer
 		pTimer->Start();
+		
 	}
 	else
 	{
@@ -1815,7 +1819,7 @@ void Renderer::ToggleRotation(Timer* pTimer)
 	}
 
 	m_stopRotation = !m_stopRotation;
-	
+	pTimer->Update();
 }
 
 void Renderer::CycleShadingMode()
@@ -1857,20 +1861,20 @@ bool Renderer::SaveBufferToImage() const
 */
 inline ColorRGB Renderer::Phong(const ColorRGB& ks, float exp, const Vector3& l, const Vector3& v, const Vector3& n) const
 {
+	
 
-	Vector3 reflect{ l - (2 * (Vector3::Dot(n, l)) * n) };
-	reflect.Normalized();
+	 Vector3 reflect = l - 2 * Vector3::Dot(n, l) * n;
+    reflect.Normalize();
 
-	float cosAngle{ std::max(0.f, Vector3::Dot(reflect, v)) };
+    float cosAngle = std::max(0.0f, Vector3::Dot(reflect, v));
 
-	// Do a max to avoid negative values for the angle
-	ColorRGB specularRefl{ 
-		ks.r * (powf(cosAngle, exp)) ,
-		ks.g * (powf(cosAngle, exp)),
-		ks.b * (powf(cosAngle, exp))
-	};
+    ColorRGB specularRefl{
+        ks.r * powf(cosAngle, exp),
+        ks.g * powf(cosAngle, exp),
+        ks.b * powf(cosAngle, exp)
+    };
 
-	return specularRefl;
+    return specularRefl;
 	
 }
 

@@ -17,8 +17,8 @@ namespace dae
 		Camera(const Vector3& _origin, float _fovAngle):
 			origin{_origin},
 			fovAngle{_fovAngle},
-			near_plane{ 0.0001f},
-			far_plane{ 1000.f }
+			near_plane{ 0.1f},
+			far_plane{ 100.f }
 		{
 		}
 
@@ -27,8 +27,8 @@ namespace dae
 		float fovAngle{90.f};
 		float fov{ tanf((fovAngle * TO_RADIANS) / 2.f) };
 		float aspectRatio{};
-		const float near_plane{ 0.0001f };
-		const float far_plane{ 1000.f };
+		float near_plane{ 0.1f };
+		float far_plane{ 100.f };
 
 		Vector3 forward{Vector3::UnitZ};
 		Vector3 up{Vector3::UnitY};
@@ -41,6 +41,7 @@ namespace dae
 
 		float totalPitch{};
 		float totalYaw{};
+
 
 		Matrix invViewMatrix{};			// Is just ONB ( Camera to World Space )
 		Matrix viewMatrix{};			// World space to Camera space ( Inverse of the ONB )
@@ -104,15 +105,17 @@ namespace dae
 			//DirectX Implementation => https://learn.microsoft.com/en-us/windows/win32/direct3d9/d3dxmatrixperspectivefovlh
 
 			// Map z coord between [0, 1]
-			float A{ far_plane / (far_plane - near_plane) };
-			float B{ -(far_plane * near_plane)/ (far_plane - near_plane) };
+			//float A{ far_plane / (far_plane - near_plane) };
+			//float B{ -(far_plane * near_plane)/ (far_plane - near_plane) };
 
-			projectionMatrix[0][0] = 1 / (aspectRatio * fov);
-			projectionMatrix[1][1] = 1 / fov;
-			projectionMatrix[2][2] = A + B;		// Map Z coord so it is in the [0, 1] range
-			projectionMatrix[2][3] = 1;			// Keep the original z value from the vertex to be used in the perspective divide
-												// Store it at the w component from the matrix
+			//projectionMatrix[0][0] = 1 / (aspectRatio * fov);
+			//projectionMatrix[1][1] = 1 / fov;
+			//projectionMatrix[2][2] = A;		// Map Z coord so it is in the [0, 1] range
+			//projectionMatrix[3][2] = B;
+			//projectionMatrix[2][3] = 1;			// Keep the original z value from the vertex to be used in the perspective divide
+			//									// Store it at the w component from the matrix
 
+			projectionMatrix = Matrix::CreatePerspectiveFovLH(fov, aspectRatio, near_plane, far_plane);
 		}
 
 		void Update(Timer* pTimer)
@@ -154,10 +157,13 @@ namespace dae
 			if (pKeyboardState[SDL_SCANCODE_W])
 			{
 				origin += forward * movementSpeed * movementInc * deltaTime;
+
+
 			}
 			if (pKeyboardState[SDL_SCANCODE_S])
 			{
 				origin -= forward * movementSpeed * movementInc * deltaTime;
+				
 			}
 
 			// Forward / BackWard / Up / Down with mouse
