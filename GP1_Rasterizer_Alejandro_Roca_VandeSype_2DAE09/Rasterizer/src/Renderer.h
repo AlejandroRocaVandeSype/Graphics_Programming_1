@@ -43,33 +43,33 @@ namespace dae
 
 	private:
 
-		inline void Render_W1_Part1();
-		inline void Render_W1_Part2();
-		inline void Render_W1_Part3();
-		inline void Render_W1_Part4();
-		inline void Render_W1_Part5();
-		
-		// Week 2
-		inline void Render_W2_Part1();	 // QUADS
-		inline void Render_W2_Part2();	// Textures & Vertex Attributes
-		inline void Render_W2_Part3();	// Depth Interpolation
+		//inline void Render_W1_Part1();
+		//inline void Render_W1_Part2();
+		//inline void Render_W1_Part3();
+		//inline void Render_W1_Part4();
+		//inline void Render_W1_Part5();
+		//
+		//// Week 2
+		//inline void Render_W2_Part1();	 // QUADS
+		//inline void Render_W2_Part2();	// Textures & Vertex Attributes
+		//inline void Render_W2_Part3();	// Depth Interpolation
 
-		// Week 3
-		inline void Render_W3();
-		inline void Render_W3_Part2();
+		//// Week 3
+		//inline void Render_W3();
+		inline void Render_Final();
 
 
-		void VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex>& vertices_out) const;
-		//void VertexTransformationFunction_W2_Part1(std::vector<Mesh>& meshes_in, std::vector<Vertex>& vertices_out) const;
-		void VertexTransformationFunction_W2( std::vector<Mesh>& meshes_in) const;
-		void VertexTransformationFunction_W3(std::vector<Mesh>& meshes_in) const;
+		//void VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex>& vertices_out) const;
+		////void VertexTransformationFunction_W2_Part1(std::vector<Mesh>& meshes_in, std::vector<Vertex>& vertices_out) const;
+		//void VertexTransformationFunction_W2( std::vector<Mesh>& meshes_in) const;
+		void VertexTransformationFunction(std::vector<Mesh>& meshes_in) const;
 
-		inline void RenderPixel(const std::vector<dae::Vertex>& vertices_ssv, const std::vector<uint32_t>& meshes_indices, 
+		/*inline void RenderPixel(const std::vector<dae::Vertex>& vertices_ssv, const std::vector<uint32_t>& meshes_indices, 
 			size_t triangleIdx) const;
 		inline void RenderPixel_W3(const std::vector<dae::Vertex_Out>& vertices_ssv, const std::vector<uint32_t>& meshes_indices,
-			size_t triangleIdx) const;
+			size_t triangleIdx) const;*/
 
-		inline void RenderPixel_W4(const std::vector<dae::Vertex_Out>& vertices_ssv, const std::vector<uint32_t>& meshes_indices,
+		inline void RenderPixel(const std::vector<dae::Vertex_Out>& vertices_ssv, const std::vector<uint32_t>& meshes_indices,
 			size_t triangleIdx) const;
 
 		inline ColorRGB Remap(float value, float toLow, float toHigh) const;
