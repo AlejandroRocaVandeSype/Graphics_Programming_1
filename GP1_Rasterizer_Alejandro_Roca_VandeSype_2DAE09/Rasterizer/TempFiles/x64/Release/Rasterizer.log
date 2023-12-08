@@ -1,8 +1,7 @@
-﻿  Renderer.cpp
-  Generating code
-  2 of 659 functions ( 0.3%) were compiled, the rest were copied from previous compilation.
+﻿  Generating code
+  0 of 659 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    1 functions had inline decision re-evaluated but remain unchanged
+    0 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   Rasterizer.vcxproj -> C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_Rasterizer_Alejandro_Roca_VandeSype_2DAE09\bin\x64\Release\Rasterizer.exe
   0 File(s) copied
