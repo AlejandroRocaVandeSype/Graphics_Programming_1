@@ -28,6 +28,13 @@ namespace dae
 		bool m_IsInitialized{ false };
 
 		//DIRECTX
+		ID3D11Device* m_pDevice;					// Resources
+		ID3D11DeviceContext* m_pDeviceContext;		// Rendering pipeline configuration
+		IDXGISwapChain* m_pSwapChain;
+		ID3D11Texture2D* m_pDepthStencilBuffer;		// 2D Texture 
+		ID3D11DepthStencilView* m_pDepthStencilView;
+		ID3D11Resource* m_pRenderTargetBuffer;				// Pointer to the back buffer
+		ID3D11RenderTargetView* m_pRenderTargetView;		// render-target subresources 
 		HRESULT InitializeDirectX();
 		//...
 	};
