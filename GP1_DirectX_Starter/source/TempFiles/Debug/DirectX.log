@@ -1,1 +1,18 @@
-﻿
+﻿  pch.cpp
+  Effect.cpp
+  Matrix.cpp
+  Mesh.cpp
+  Renderer.cpp
+  Timer.cpp
+  main.cpp
+  Vector2.cpp
+  Vector3.cpp
+  Vector4.cpp
+  Generating Code...
+  DirectX.vcxproj -> C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_DirectX_Starter\bin\Debug\DirectX.exe
+  0 File(s) copied
+  0 File(s) copied
+  0 File(s) copied
+  0 File(s) copied
+  0 File(s) copied
+  0 File(s) copied

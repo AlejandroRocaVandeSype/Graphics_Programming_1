@@ -5,6 +5,7 @@ struct SDL_Surface;
 
 namespace dae
 {
+	class Mesh;
 	class Renderer final
 	{
 	public:
@@ -27,6 +28,8 @@ namespace dae
 
 		bool m_IsInitialized{ false };
 
+		Mesh* m_pMesh;
+
 		//DIRECTX
 		ID3D11Device* m_pDevice;					// Resources
 		ID3D11DeviceContext* m_pDeviceContext;		// Rendering pipeline configuration
@@ -37,5 +40,7 @@ namespace dae
 		ID3D11RenderTargetView* m_pRenderTargetView;		// render-target subresources 
 		HRESULT InitializeDirectX();
 		//...
+
+		void InitializeMeshes();
 	};
 }

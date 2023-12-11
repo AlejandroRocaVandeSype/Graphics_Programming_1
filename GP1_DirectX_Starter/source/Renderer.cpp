@@ -1,13 +1,13 @@
 #include "pch.h"
 #include "Renderer.h"
-
+#include "Mesh.h"
 
 namespace dae {
 
 	Renderer::Renderer(SDL_Window* pWindow) :
 		m_pWindow(pWindow), m_pDevice { nullptr }, m_pDeviceContext{ nullptr },
 		m_pSwapChain{ nullptr }, m_pDepthStencilBuffer{ nullptr }, m_pDepthStencilView{ nullptr },
-		m_pRenderTargetBuffer{ nullptr }, m_pRenderTargetView{ nullptr }
+		m_pRenderTargetBuffer{ nullptr }, m_pRenderTargetView{ nullptr }, m_pMesh{ nullptr }
 	{
 		//Initialize
 		SDL_GetWindowSize(pWindow, &m_Width, &m_Height);
@@ -23,10 +23,28 @@ namespace dae {
 		{
 			std::cout << "DirectX initialization failed!\n";
 		}
+
+		InitializeMeshes();
+	}
+
+	void Renderer::InitializeMeshes()
+	{
+		// Create some data for our mesh
+		std::vector<Vertex_PosCol> vertices{
+			{ { .0f, .5f, .5f}, {1.f, 0.f, 0.f}},
+			{ { .5f, -.5f, .5f}, {0.f, 0.f, 1.f}},
+			{ { -.5f, -.5f, .5f}, {0.f, 1.f, 0.f}},
+		};
+
+		std::vector<uint32_t> indices{ 0, 1, 2 };
+
+		m_pMesh = new Mesh(m_pDevice, vertices, indices);
 	}
 
 	Renderer::~Renderer()
 	{
+		delete m_pMesh;
+
 		// RESOURCES ARE RELEASED IN REVERSE ORDER
 		if (m_pRenderTargetView)
 		{
@@ -84,7 +102,11 @@ namespace dae {
 		m_pDeviceContext->ClearRenderTargetView(m_pRenderTargetView, color);
 		m_pDeviceContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
 
+		// Render our meshes
+		m_pMesh->Render(m_pDeviceContext);
+
 		//2. SET PIPELINE + INVOKE DRAW CALLS (=RENDER)
+		// After rendering, you present the frame to the screen
 		m_pSwapChain->Present(0, 0);
 
 	}
