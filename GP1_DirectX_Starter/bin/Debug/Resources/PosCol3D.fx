@@ -1,3 +1,13 @@
+
+// Global variable
+float4x4 gWorldViewProj : WorldViewProjection;
+
+
+cbuffer WorldViewProjConstantBuffer : register(b0)
+{
+	float4x4 wvpMat;
+};
+
 //--------------------------------------------------------
 //	INPUT / OUTPUT STRUCTS
 // Define how a vertex looks like ( vertext layout)
@@ -11,9 +21,9 @@ struct VS_INPUT
 };
 
 
-struct VS_OUTPUT
+struct VS_OUTPUT		// All values are interpolated
 {
-	float4 Position : SV_POSITION;
+	float4 Position : SV_POSITION;	// SV_POSITION is mandatory so the GPU has the needed data for the next drawing step
 	float3 Color : COLOR;
 };
 
@@ -23,8 +33,15 @@ struct VS_OUTPUT
 //--------------------------------------------------------
 VS_OUTPUT VS(VS_INPUT input)
 {
+	
 	VS_OUTPUT output = (VS_OUTPUT)0;
-	output.Position = float4(input.Position, 1.f);
+	
+	float4 pos = float4(input.Position, 1.f);
+
+	// Transform input Position using the WorldViewProjection
+	pos = mul(pos, gWorldViewProj);
+
+	output.Position = pos;
 	output.Color = input.Color;
 	return output;
 }

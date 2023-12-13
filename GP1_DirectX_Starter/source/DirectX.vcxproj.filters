@@ -38,6 +38,7 @@
     </ClInclude>
     <ClInclude Include="Effect.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="Camera.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -60,5 +61,6 @@
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="Effect.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="Camera.cpp" />
   </ItemGroup>
 </Project>

@@ -25,6 +25,8 @@ namespace dae
 
 		void Render(ID3D11DeviceContext* pDeviceContext) const;
 
+		void SetMatrix(const Matrix& worldViewProjMatrix);
+
 	private:
 
 		ID3DX11EffectTechnique* m_pTechnique;

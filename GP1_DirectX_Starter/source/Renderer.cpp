@@ -7,7 +7,7 @@ namespace dae {
 	Renderer::Renderer(SDL_Window* pWindow) :
 		m_pWindow(pWindow), m_pDevice { nullptr }, m_pDeviceContext{ nullptr },
 		m_pSwapChain{ nullptr }, m_pDepthStencilBuffer{ nullptr }, m_pDepthStencilView{ nullptr },
-		m_pRenderTargetBuffer{ nullptr }, m_pRenderTargetView{ nullptr }, m_pMesh{ nullptr }
+		m_pRenderTargetBuffer{ nullptr }, m_pRenderTargetView{ nullptr }, m_pMesh{ nullptr }, m_Camera{}
 	{
 		//Initialize
 		SDL_GetWindowSize(pWindow, &m_Width, &m_Height);
@@ -24,16 +24,36 @@ namespace dae {
 			std::cout << "DirectX initialization failed!\n";
 		}
 
+		float aspectRatio{ m_Width / static_cast<float>(m_Height) };
+
+		// Init Camera
+		m_Camera.Initialize(aspectRatio, 45.f, Vector3{ 0.f, 0.f, -10.f });
+
 		InitializeMeshes();
+
+		// Camera with Constant buffer View
+		// Reinterpret matrix data -> Layout the floats from the matrix in a list ( Traspose, etc). SetMatrix
+		// accepts floats not a matrix
+		// Upgrade to quad -> With 2 triangles best
+		// Add UV variable to fx file
+		// Texture code in the texture class
+		// In Texture Constuct free after using it
 	}
 
 	void Renderer::InitializeMeshes()
 	{
-		// Create some data for our mesh
-		std::vector<Vertex_PosCol> vertices{
+		// Create some data for our mesh (NDC coord)
+		/*std::vector<Vertex_PosCol> vertices{
 			{ { .0f, .5f, .5f}, {1.f, 0.f, 0.f}},
 			{ { .5f, -.5f, .5f}, {0.f, 0.f, 1.f}},
 			{ { -.5f, -.5f, .5f}, {0.f, 1.f, 0.f}},
+		};*/
+
+		 //World space coord
+		std::vector<Vertex_PosCol> vertices{
+			{ { 0.f, 3.f, 2.f}, {1.f, 0.f, 0.f}},
+			{ { 3.f, -3.f, 2.f}, {0.f, 0.f, 1.f}},
+			{ { -3.f, -3.f, 2.f}, {0.f, 1.f, 0.f}},
 		};
 
 		std::vector<uint32_t> indices{ 0, 1, 2 };
@@ -49,26 +69,31 @@ namespace dae {
 		if (m_pRenderTargetView)
 		{
 			m_pRenderTargetView->Release();
+			m_pRenderTargetView = nullptr;
 		}
 
 		if (m_pRenderTargetBuffer)
 		{
 			m_pRenderTargetBuffer->Release();
+			m_pRenderTargetBuffer = nullptr;
 		}
 
 		if (m_pDepthStencilView)
 		{
 			m_pDepthStencilView->Release();
+			m_pDepthStencilView = nullptr;
 		}
 
 		if (m_pDepthStencilBuffer)
 		{
 			m_pDepthStencilBuffer->Release();
+			m_pDepthStencilBuffer = nullptr;
 		}
 
 		if (m_pSwapChain)
 		{
 			m_pSwapChain->Release();
+			m_pSwapChain = nullptr;
 		}
 
 		if (m_pDeviceContext)
@@ -76,11 +101,13 @@ namespace dae {
 			m_pDeviceContext->ClearState();
 			m_pDeviceContext->Flush();
 			m_pDeviceContext->Release();
+			m_pDeviceContext = nullptr;
 		}
 
 		if (m_pDevice)
 		{
 			m_pDevice->Release();
+			m_pDevice = nullptr;
 		}
 
 
@@ -88,6 +115,7 @@ namespace dae {
 
 	void Renderer::Update(const Timer* pTimer)
 	{
+		m_Camera.Update(pTimer);
 
 	}
 
@@ -99,13 +127,19 @@ namespace dae {
 
 		// 1. CLEAR BUFFERS ( RTV & DSV)
 		constexpr float color[4] = { 0.f, 0.f, 0.3f, 1.f };
-		m_pDeviceContext->ClearRenderTargetView(m_pRenderTargetView, color);
-		m_pDeviceContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
+		m_pDeviceContext->ClearRenderTargetView(m_pRenderTargetView, color);	// Back buffer
+		m_pDeviceContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);	// Depth buffer
 
+		// Update WorldViewProj matrix before rendering
+		Matrix worldViewProjMatrix{ m_Camera.GetViewMatrix() * m_Camera.GetProjectionMatrix() };
+		m_pMesh->SetMatrix(worldViewProjMatrix);
+	
+		//2. SET PIPELINE + INVOKE DRAW CALLS (=RENDER)
 		// Render our meshes
 		m_pMesh->Render(m_pDeviceContext);
 
-		//2. SET PIPELINE + INVOKE DRAW CALLS (=RENDER)
+
+		//3. PRESENT BACKBUFFER (SWAP)
 		// After rendering, you present the frame to the screen
 		m_pSwapChain->Present(0, 0);
 
@@ -115,10 +149,12 @@ namespace dae {
 	{
 		// 1. CREATE DEVICE & DEVICE CONTEXT
 		D3D_FEATURE_LEVEL feature_level{ D3D_FEATURE_LEVEL_11_1 };
-		uint32_t createDeviceFlags{ 0 };
+		uint32_t createDeviceFlags{ 0 };		// For extra layers
 
 #if defined(DEBUG) || defined(_DEBUG)
-		createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;			// OR operation
+		createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;			// OR operation. 
+																// The created device will support the debug layer
+																		
 #endif
 
 		HRESULT result{ D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, 0, createDeviceFlags, &feature_level,
@@ -126,7 +162,7 @@ namespace dae {
 		if (FAILED(result))
 			return result;
 
-		// Create DXGI Factory
+		// Create DXGI Factory -> To create DXGI objects
 		IDXGIFactory1* pDxgiFactory{};
 		result = CreateDXGIFactory1(__uuidof(IDXGIFactory1), reinterpret_cast<void**>(&pDxgiFactory));
 		if (FAILED(result))
@@ -168,7 +204,7 @@ namespace dae {
 		D3D11_TEXTURE2D_DESC depthStencilDesc{};		// Depth buffer with stencil buffer
 		depthStencilDesc.Width = m_Width;
 		depthStencilDesc.Height = m_Height;
-		depthStencilDesc.MipLevels = 1;
+		depthStencilDesc.MipLevels = 1;					// Amount of mipMaps we are using
 		depthStencilDesc.ArraySize = 1;
 		depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 		depthStencilDesc.SampleDesc.Count = 1;
@@ -222,7 +258,11 @@ namespace dae {
 		m_pDeviceContext->RSSetViewports(1, &viewport);		// Only 1 viewPort
 
 		if (pDxgiFactory)
+		{
 			pDxgiFactory->Release();
+			pDxgiFactory = nullptr;
+		}
+			
 
 		return result;
 	}

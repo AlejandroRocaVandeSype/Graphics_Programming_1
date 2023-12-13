@@ -16,11 +16,14 @@ namespace dae
 
 		ID3DX11Effect* GetEffect();
 		ID3DX11EffectTechnique* GetTechnique();
+		ID3DX11EffectMatrixVariable* GetWorldViewProjMatrix();
 
 	private:
 
 		ID3DX11Effect* m_pEffect;		// Manages a set of state objects, resources, and shaders for implementing a rendering effect
 		ID3DX11EffectTechnique* m_pTechnique;
+
+		ID3DX11EffectMatrixVariable* m_pWorldViewProjVariable;
 
 		static ID3DX11Effect* LoadEffect(ID3D11Device* pDevice, const std::wstring& assetPath);
 	};

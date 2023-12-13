@@ -1,5 +1,7 @@
-#pragma once
+#ifndef DirectX_RENDERER
+#define DirectX_RENDERER
 
+#include "Camera.h"
 struct SDL_Window;
 struct SDL_Surface;
 
@@ -30,13 +32,15 @@ namespace dae
 
 		Mesh* m_pMesh;
 
+		Camera m_Camera;
+
 		//DIRECTX
 		ID3D11Device* m_pDevice;					// Resources
 		ID3D11DeviceContext* m_pDeviceContext;		// Rendering pipeline configuration
-		IDXGISwapChain* m_pSwapChain;
+		IDXGISwapChain* m_pSwapChain;				// One or more surfaces to store rendering data
 		ID3D11Texture2D* m_pDepthStencilBuffer;		// 2D Texture 
 		ID3D11DepthStencilView* m_pDepthStencilView;
-		ID3D11Resource* m_pRenderTargetBuffer;				// Pointer to the back buffer
+		ID3D11Resource* m_pRenderTargetBuffer;				// Pointer to the back buffer ( Where we are going to render )
 		ID3D11RenderTargetView* m_pRenderTargetView;		// render-target subresources 
 		HRESULT InitializeDirectX();
 		//...
@@ -44,3 +48,5 @@ namespace dae
 		void InitializeMeshes();
 	};
 }
+
+#endif

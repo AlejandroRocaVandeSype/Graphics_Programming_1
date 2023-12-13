@@ -27,6 +27,8 @@ Mesh::Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertices, co
 	vertexDesc[1].AlignedByteOffset = 12;
 	vertexDesc[1].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 
+	// TEXCOORD 24 BYTES FLOAT
+
 	// CREATE INPUT LAYOUT THROUGH THE TECHNIQUE FROM THE EFFECT
 	D3DX11_PASS_DESC passDesc{};
 	m_pTechnique->GetPassByIndex(0)->GetDesc(&passDesc);
@@ -118,7 +120,7 @@ void Mesh::Render(ID3D11DeviceContext* pDeviceContext) const
 
 	//4. Set IndexBuffer
 	pDeviceContext->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-
+	
 	//5. Draw
 	D3DX11_TECHNIQUE_DESC techDesc{};
 	m_pEffect->GetTechnique()->GetDesc(&techDesc);
@@ -127,4 +129,9 @@ void Mesh::Render(ID3D11DeviceContext* pDeviceContext) const
 		m_pEffect->GetTechnique()->GetPassByIndex(p)->Apply(0, pDeviceContext);
 		pDeviceContext->DrawIndexed(m_NumIndices, 0, 0);
 	}
+}
+
+void Mesh::SetMatrix(const Matrix& worldViewProjMatrix)
+{
+	m_pEffect->GetWorldViewProjMatrix()->SetMatrix(reinterpret_cast<const float*>(&worldViewProjMatrix));
 }
