@@ -24,6 +24,13 @@ void Camera::Initialize(float aspectRatio, float fovAngle, Vector3 origin)
 	m_Origin = origin;
 	m_Near_plane = 0.1f;
 	m_Far_plane = 100.f;
+	m_Up = Vector3::UnitY;
+	m_Right = Vector3::UnitX;
+	m_Forward = Vector3::UnitZ;
+	m_MovementInc = 4.f;
+	m_RotationSpeed = 8.f;
+	m_MovementSpeed = 12.f;
+	m_CanRotate = true;
 }
 
 

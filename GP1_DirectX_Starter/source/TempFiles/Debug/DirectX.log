@@ -1,1 +1,8 @@
-﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppClean.targets(77,5): warning : The process cannot access the file 'c:\studies\studies\dae\2º year\graphics programming 1\lab\graphics-programming-1\gp1_directx_starter\source\tempfiles\debug\directx.pch' because it is being used by another process.
+﻿  Camera.cpp
+  DirectX.vcxproj -> C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_DirectX_Starter\bin\Debug\DirectX.exe
+  0 File(s) copied
+  0 File(s) copied
+  0 File(s) copied
+  0 File(s) copied
+  0 File(s) copied
+  0 File(s) copied

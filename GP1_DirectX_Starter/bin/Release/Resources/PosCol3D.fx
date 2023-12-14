@@ -2,6 +2,12 @@
 // Global variable
 float4x4 gWorldViewProj : WorldViewProjection;
 
+
+cbuffer WorldViewProjConstantBuffer : register(b0)
+{
+	float4x4 wvpMat;
+};
+
 //--------------------------------------------------------
 //	INPUT / OUTPUT STRUCTS
 // Define how a vertex looks like ( vertext layout)
