@@ -1,17 +1,19 @@
 #include "pch.h"
 #include "Effect.h"
+#include "Texture.h"
 
 using namespace dae;
 
 
 Effect::Effect(ID3D11Device* pDevice, const std::wstring& assetPath)
 	: m_pEffect{ nullptr },
-	m_pTechnique{ nullptr } 
+	m_pTechnique{ nullptr }, m_pDiffuseMapVariable{ nullptr }
 {
 	m_pEffect = LoadEffect(pDevice, assetPath);
 
 	if (m_pEffect)
 	{
+		// Binding
 		m_pTechnique = m_pEffect->GetTechniqueByName("DefaultTechnique");
 		if (!m_pTechnique->IsValid())
 		{
@@ -22,6 +24,12 @@ Effect::Effect(ID3D11Device* pDevice, const std::wstring& assetPath)
 		if (!m_pWorldViewProjVariable->IsValid())
 		{
 			std::wcout << L"m_pWorldViewProjVariable not valid\n";
+		}
+
+		m_pDiffuseMapVariable = m_pEffect->GetVariableByName("gDiffuseMap")->AsShaderResource();
+		if (!m_pDiffuseMapVariable->IsValid())
+		{
+			std::wcout << L"m_pDiffuseMapVariable not valid\n";
 		}
 	}
 }
@@ -103,17 +111,25 @@ ID3DX11Effect* Effect::LoadEffect(ID3D11Device* pDevice, const std::wstring& ass
 }
 
 
-ID3DX11Effect* Effect::GetEffect()
+
+void Effect::SetDiffuseMap(Texture* pDiffuseTexture)
+{
+	if (m_pDiffuseMapVariable)
+		m_pDiffuseMapVariable->SetResource(pDiffuseTexture->GetRSV());
+}
+
+
+ID3DX11Effect* Effect::GetEffect() const
 {
 	return m_pEffect;
 }
 
-ID3DX11EffectTechnique* Effect::GetTechnique()
+ID3DX11EffectTechnique* Effect::GetTechnique() const
 {
 	return m_pTechnique;
 }
 
-ID3DX11EffectMatrixVariable* Effect::GetWorldViewProjMatrix()
+ID3DX11EffectMatrixVariable* Effect::GetWorldViewProjMatrix() const
 {
 	return m_pWorldViewProjVariable;
 }

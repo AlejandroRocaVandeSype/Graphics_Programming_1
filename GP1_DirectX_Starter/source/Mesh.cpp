@@ -1,33 +1,39 @@
 #include "pch.h"
 #include "Mesh.h"
 #include "Effect.h"
+#include "Texture.h"
 
 using namespace dae;
 
 Mesh::Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertices, const std::vector<uint32_t>& indices)
 	: m_pTechnique{ nullptr }, m_pInputLayout{ nullptr }, m_pEffect{ nullptr }, m_pVertexBuffer{ nullptr },
-	  m_pIndexBuffer{ nullptr}, m_NumIndices{ static_cast<uint32_t>(indices.size()) }
+	  m_pIndexBuffer{ nullptr}, m_NumIndices{ static_cast<uint32_t>(indices.size()) }, m_pDiffuseTex{ nullptr },
+	m_TranslationTransform{}, m_RotationTransform{}, m_WorldMatrix{}, m_ScaleTransform{}
 {
 	m_pEffect = new Effect(pDevice, L"Resources/PosCol3D.fx");
 	m_pTechnique = m_pEffect->GetTechnique();
 
 	// CREATE VERTEX LAYOUT
-	static constexpr uint32_t numElements{ 2 };
+	static constexpr uint32_t numElements{ 3 };
 	D3D11_INPUT_ELEMENT_DESC vertexDesc[numElements]{};
 
 	// POSITION
 	vertexDesc[0].SemanticName = "POSITION";
-	vertexDesc[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	vertexDesc[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;			  // Nºelem and type R32 bits G32 bits B32 bits ( 3	elements )
 	vertexDesc[0].AlignedByteOffset = 0;
 	vertexDesc[0].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 
 	// COLOR
 	vertexDesc[1].SemanticName = "COLOR";
-	vertexDesc[1].Format = DXGI_FORMAT_R32G32B32_FLOAT;
-	vertexDesc[1].AlignedByteOffset = 12;
+	vertexDesc[1].Format = DXGI_FORMAT_R32G32B32_FLOAT;				
+	vertexDesc[1].AlignedByteOffset = 12;							// Position takes 12 bytes ( 3 floats x 4 bytesPerFloat)
 	vertexDesc[1].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 
-	// TEXCOORD 24 BYTES FLOAT
+	// TEXCOORD
+	vertexDesc[2].SemanticName = "TEXCOORD";
+	vertexDesc[2].Format = DXGI_FORMAT_R32G32_FLOAT;				// Only R32 and G32
+	vertexDesc[2].AlignedByteOffset = 24;							
+	vertexDesc[2].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 
 	// CREATE INPUT LAYOUT THROUGH THE TECHNIQUE FROM THE EFFECT
 	D3DX11_PASS_DESC passDesc{};
@@ -71,6 +77,11 @@ Mesh::Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertices, co
 	if (FAILED(result))
 		return;
 
+	//m_pDiffuseTex = Texture::LoadFromFile(pDevice, "Resources/uv_grid_2.png");
+	m_pDiffuseTex = Texture::LoadFromFile(pDevice, "Resources/vehicle_diffuse.png");
+	m_pEffect->SetDiffuseMap(m_pDiffuseTex);
+	
+
 }
 
 Mesh::~Mesh()
@@ -100,6 +111,9 @@ Mesh::~Mesh()
 	}
 
 	delete m_pEffect;
+
+	if (m_pDiffuseTex)
+		delete m_pDiffuseTex;
 }
 
 
@@ -120,7 +134,10 @@ void Mesh::Render(ID3D11DeviceContext* pDeviceContext) const
 
 	//4. Set IndexBuffer
 	pDeviceContext->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
 	
+	m_pEffect->SetDiffuseMap(m_pDiffuseTex);
+
 	//5. Draw
 	D3DX11_TECHNIQUE_DESC techDesc{};
 	m_pEffect->GetTechnique()->GetDesc(&techDesc);
@@ -131,7 +148,36 @@ void Mesh::Render(ID3D11DeviceContext* pDeviceContext) const
 	}
 }
 
+void Mesh::Update(const Timer* pTimer)
+{
+	RotateY((PI_DIV_2 / 2.f) * pTimer->GetTotal());
+	UpdateTransforms();
+}
+
+void Mesh::UpdateTransforms()
+{
+	//Calculate Final Transform 
+	//... left-hand system -> SRT ( NOT TRS )
+	m_WorldMatrix = m_ScaleTransform * m_RotationTransform * m_TranslationTransform;
+
+}
+
+void Mesh::RotateY(float yaw)
+{
+	m_RotationTransform = Matrix::CreateRotationY(yaw);
+}
+
+void Mesh::Translate(const Vector3& translation)
+{
+	m_TranslationTransform = Matrix::CreateTranslation(translation);
+}
+
 void Mesh::SetMatrix(const Matrix& worldViewProjMatrix)
 {
 	m_pEffect->GetWorldViewProjMatrix()->SetMatrix(reinterpret_cast<const float*>(&worldViewProjMatrix));
+}
+
+Matrix Mesh::GetWorldMatrix() const
+{
+	return m_WorldMatrix;
 }

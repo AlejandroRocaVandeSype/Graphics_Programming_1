@@ -7,9 +7,11 @@ namespace dae
 	struct Vertex_PosCol
 	{
 		Vector3 position;
-		ColorRGB color;
+		ColorRGB color{ colors::White };
+		Vector2 textureUV{};
 	};
 	class Effect;
+	class Texture;
 	class Mesh final
 	{
 	public:
@@ -24,8 +26,14 @@ namespace dae
 		Mesh& operator=(Mesh&&) noexcept = delete;
 
 		void Render(ID3D11DeviceContext* pDeviceContext) const;
+		void Update(const Timer* pTimer);
 
 		void SetMatrix(const Matrix& worldViewProjMatrix);
+
+		Matrix GetWorldMatrix() const;
+
+		void RotateY(float yaw);
+		void Translate(const Vector3& translation);
 
 	private:
 
@@ -36,6 +44,16 @@ namespace dae
 		ID3D11Buffer* m_pVertexBuffer;				// Buffer with all the vertices from our MESH
 		ID3D11Buffer* m_pIndexBuffer;				//	  "		"	"	"   indices	  "	  "    "
 		uint32_t m_NumIndices;
+
+		Texture* m_pDiffuseTex;
+
+		Matrix m_WorldMatrix;
+
+		Matrix m_RotationTransform{};
+		Matrix m_TranslationTransform{};
+		Matrix m_ScaleTransform{};
+
+		void UpdateTransforms();
 	};
 }
 

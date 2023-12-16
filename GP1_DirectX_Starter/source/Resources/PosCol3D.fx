@@ -1,11 +1,15 @@
 
-// Global variable
+// Global variables
 float4x4 gWorldViewProj : WorldViewProjection;
+Texture2D gDiffuseMap : DiffuseMap;					// Color texture for our mesh
 
 
-cbuffer WorldViewProjConstantBuffer : register(b0)
+// SAMPLE OUR SHADER
+SamplerState samPoint
 {
-	float4x4 wvpMat;
+	Filter = MIN_MAG_MIP_POINT;
+	AddressU = Wrap;		// or Mirror, Clamp, Border
+	AddressV = Wrap;
 };
 
 //--------------------------------------------------------
@@ -18,6 +22,7 @@ struct VS_INPUT
 {
 	float3 Position : POSITION;
 	float3 Color : COLOR;
+	float2 TextureUV : TEXCOORD;
 };
 
 
@@ -25,7 +30,9 @@ struct VS_OUTPUT		// All values are interpolated
 {
 	float4 Position : SV_POSITION;	// SV_POSITION is mandatory so the GPU has the needed data for the next drawing step
 	float3 Color : COLOR;
+	float2 TextureUV : TEXCOORD;
 };
+
 
 // Create our shader functions
 //--------------------------------------------------------
@@ -43,6 +50,7 @@ VS_OUTPUT VS(VS_INPUT input)
 
 	output.Position = pos;
 	output.Color = input.Color;
+	output.TextureUV = input.TextureUV;
 	return output;
 }
 
@@ -53,7 +61,11 @@ VS_OUTPUT VS(VS_INPUT input)
 //--------------------------------------------------------
 float4 PS(VS_OUTPUT input) : SV_TARGET
 {
-	return float4(input.Color, 1.f);
+	//return float4(input.Color, 1.f);
+	//Output.RGBColor = g_MeshTexture.Sample(MeshTextureSampler, In.TextureUV) * In.Diffuse;
+	return float4(gDiffuseMap.Sample(samPoint, input.TextureUV) * input.Color , 1.f);
+
+	 
 }
 
 //--------------------------------------------------------
@@ -70,3 +82,5 @@ technique11 DefaultTechnique
 		SetPixelShader( CompileShader( ps_5_0, PS() ) );
 	}
 }
+
+

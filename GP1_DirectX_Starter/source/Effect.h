@@ -3,6 +3,7 @@
 
 namespace dae
 {
+	class Texture;
 	class Effect final
 	{
 	public:
@@ -14,9 +15,12 @@ namespace dae
 		Effect& operator=(const Effect&) = delete;
 		Effect& operator=(Effect&&) noexcept = delete;
 
-		ID3DX11Effect* GetEffect();
-		ID3DX11EffectTechnique* GetTechnique();
-		ID3DX11EffectMatrixVariable* GetWorldViewProjMatrix();
+		ID3DX11Effect* GetEffect() const;
+		ID3DX11EffectTechnique* GetTechnique() const;
+		ID3DX11EffectMatrixVariable* GetWorldViewProjMatrix() const;
+
+		void SetDiffuseMap(Texture* pDiffuseTexture);
+
 
 	private:
 
@@ -24,6 +28,7 @@ namespace dae
 		ID3DX11EffectTechnique* m_pTechnique;
 
 		ID3DX11EffectMatrixVariable* m_pWorldViewProjVariable;
+		ID3DX11EffectShaderResourceVariable* m_pDiffuseMapVariable;
 
 		static ID3DX11Effect* LoadEffect(ID3D11Device* pDevice, const std::wstring& assetPath);
 	};
