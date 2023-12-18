@@ -29,6 +29,7 @@ namespace dae
 		void Update(const Timer* pTimer);
 
 		void SetMatrix(const Matrix& worldViewProjMatrix);
+		void ToggleTechnique();
 
 		Matrix GetWorldMatrix() const;
 

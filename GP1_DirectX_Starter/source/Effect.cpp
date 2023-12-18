@@ -7,15 +7,31 @@ using namespace dae;
 
 Effect::Effect(ID3D11Device* pDevice, const std::wstring& assetPath)
 	: m_pEffect{ nullptr },
-	m_pTechnique{ nullptr }, m_pDiffuseMapVariable{ nullptr }
+	m_pPointTech{ nullptr }, m_pLinearTech{ nullptr }, m_pAnisotropicTech{ nullptr }, m_pDiffuseMapVariable {nullptr },
+	m_CurrentTech { 0 }, m_NrTechniques{ 3 }
 {
 	m_pEffect = LoadEffect(pDevice, assetPath);
 
 	if (m_pEffect)
 	{
+		// POINT FILTER AT START
+		std::cout << "SAMPLER_STATE = POINT" << std::endl;
+
 		// Binding
-		m_pTechnique = m_pEffect->GetTechniqueByName("DefaultTechnique");
-		if (!m_pTechnique->IsValid())
+		m_pPointTech = m_pEffect->GetTechniqueByName("PointTechnique");
+		if (!m_pPointTech->IsValid())
+		{
+			std::wcout << L"Technique not valid\n";
+		}
+
+		m_pLinearTech = m_pEffect->GetTechniqueByName("LinearTechnique");
+		if (!m_pLinearTech->IsValid())
+		{
+			std::wcout << L"Technique not valid\n";
+		}
+
+		m_pAnisotropicTech = m_pEffect->GetTechniqueByName("AnisotropicTechnique");
+		if (!m_pAnisotropicTech->IsValid())
 		{
 			std::wcout << L"Technique not valid\n";
 		}
@@ -31,6 +47,7 @@ Effect::Effect(ID3D11Device* pDevice, const std::wstring& assetPath)
 		{
 			std::wcout << L"m_pDiffuseMapVariable not valid\n";
 		}
+
 	}
 }
 
@@ -43,10 +60,22 @@ Effect::~Effect()
 		m_pWorldViewProjVariable = nullptr;
 	}
 
-	if (m_pTechnique)
+	if (m_pPointTech)
 	{
-		m_pTechnique->Release();
-		m_pTechnique = nullptr;
+		m_pPointTech->Release();
+		m_pPointTech = nullptr;
+	}
+
+	if (m_pLinearTech)
+	{
+		m_pLinearTech->Release();
+		m_pLinearTech = nullptr;
+	}
+
+	if (m_pAnisotropicTech)
+	{
+		m_pAnisotropicTech->Release();
+		m_pAnisotropicTech = nullptr;
 	}
 
 	if (m_pEffect)
@@ -110,6 +139,25 @@ ID3DX11Effect* Effect::LoadEffect(ID3D11Device* pDevice, const std::wstring& ass
 	return pEffect;
 }
 
+void Effect::ToggleTechnique()
+{
+	m_CurrentTech++;
+	if (m_CurrentTech >= m_NrTechniques)
+		m_CurrentTech = 0;
+
+	switch (m_CurrentTech)
+	{
+	case 0:		// POINT TECHNIQUE
+		std::cout << "SAMPLER_STATE = POINT" << std::endl;
+		break;
+	case 1:		// LINEAR TECHNIQUE
+		std::cout << "SAMPLER_STATE = LINEAR" << std::endl;
+		break;
+	case 2:		// ANISOTROPIC TECHNIQUE
+		std::cout << "SAMPLER_STATE = ANISOTROPIC" << std::endl;
+		break;
+	}
+}
 
 
 void Effect::SetDiffuseMap(Texture* pDiffuseTexture)
@@ -124,9 +172,20 @@ ID3DX11Effect* Effect::GetEffect() const
 	return m_pEffect;
 }
 
+// Return the current technique being used
 ID3DX11EffectTechnique* Effect::GetTechnique() const
 {
-	return m_pTechnique;
+	switch (m_CurrentTech)
+	{
+	case 0:		// POINT TECHNIQUE
+		return m_pPointTech;
+	case 1:		// LINEAR TECHNIQUE
+		return m_pLinearTech;
+	case 2:		// ANISOTROPIC TECHNIQUE
+		return m_pAnisotropicTech;
+	default:
+		return m_pPointTech;
+	}
 }
 
 ID3DX11EffectMatrixVariable* Effect::GetWorldViewProjMatrix() const

@@ -157,6 +157,11 @@ namespace dae {
 
 	}
 
+	void Renderer::ToggleFiltering()
+	{
+		m_pMesh->ToggleTechnique();
+	}
+
 	HRESULT Renderer::InitializeDirectX()
 	{
 		// 1. CREATE DEVICE & DEVICE CONTEXT

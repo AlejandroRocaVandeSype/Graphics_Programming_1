@@ -134,7 +134,6 @@ void Mesh::Render(ID3D11DeviceContext* pDeviceContext) const
 
 	//4. Set IndexBuffer
 	pDeviceContext->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-
 	
 	m_pEffect->SetDiffuseMap(m_pDiffuseTex);
 
@@ -180,4 +179,9 @@ void Mesh::SetMatrix(const Matrix& worldViewProjMatrix)
 Matrix Mesh::GetWorldMatrix() const
 {
 	return m_WorldMatrix;
+}
+
+void Mesh::ToggleTechnique()
+{
+	m_pEffect->ToggleTechnique();
 }
