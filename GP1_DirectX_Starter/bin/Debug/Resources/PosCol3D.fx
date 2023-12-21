@@ -1,7 +1,12 @@
 
 // Global variables
 float4x4 gWorldViewProj : WorldViewProjection;
+float4x4 gWorldMatrix : WORLD;
+float3 gCameraPosition : CAMERA;
 Texture2D gDiffuseMap : DiffuseMap;					// Color texture for our mesh
+Texture2D gSpecularMap : SpecularMap;
+Texture2D gGlossinessMap : GlossinessMap;
+Texture2D gNormalMap : NormalMap;
 
 
 // SAMPLE OUR SHADER WITH DIFFERENT SAMPLER STATES
@@ -37,14 +42,19 @@ struct VS_INPUT
 	float3 Position : POSITION;
 	float3 Color : COLOR;
 	float2 TextureUV : TEXCOORD;
+	float3 Normal : NORMAL;
+	float3 Tangent : TANGENT;
 };
 
 
 struct VS_OUTPUT		// All values are interpolated
 {
 	float4 Position : SV_POSITION;	// SV_POSITION is mandatory so the GPU has the needed data for the next drawing step
+	float4 WorldPosition : TEXCOORD0;
 	float3 Color : COLOR;
-	float2 TextureUV : TEXCOORD;
+	float2 TextureUV : TEXCOORD1;
+	float3 Normal : NORMAL;
+	float3 Tangent : TANGENT;
 };
 
 
@@ -65,6 +75,9 @@ VS_OUTPUT VS(VS_INPUT input)
 	output.Position = pos;
 	output.Color = input.Color;
 	output.TextureUV = input.TextureUV;
+	output.Normal = mul(normalize(output.Normal), (float3x3) gWorldMatrix);		// Only rotation part is needed -> Convert to 3x3
+    output.Tangent = mul(normalize(output.Tangent), (float3x3) gWorldMatrix);
+	output.WorldPosition = mul(input.Position, gWorldMatrix);
 	return output;
 }
 
@@ -75,6 +88,10 @@ VS_OUTPUT VS(VS_INPUT input)
 //--------------------------------------------------------
 float4 CalculatePS(SamplerState samplerType, VS_OUTPUT input)
 {
+	// Calculate the view dir with the interpolated world position of the pixel 
+	// and the ONB of the camera
+    float invViewDirection = normalize(gCameraPosition - input.WorldPosition.xyz);
+	
 	return float4(gDiffuseMap.Sample(samplerType, input.TextureUV) * input.Color, 1.f);
 }
 
@@ -100,7 +117,7 @@ float4 PS_LINEAR(VS_OUTPUT input) : SV_TARGET
 }
 
 //--------------------------------------------------------
-//	Pixel Shader ( With LINEAR sampler state filter )
+//	Pixel Shader ( With ANISOTROPIC sampler state filter )
 //--------------------------------------------------------
 float4 PS_ANISOTROPIC(VS_OUTPUT input) : SV_TARGET
 {

@@ -140,9 +140,8 @@ inline void Camera::UpdateRotation(float deltaTime, int mouseX, int mouseY)
 inline void Camera::CalculateViewMatrix()
 {
 	//ONB => m_ViewMatrix	
-			// ... First calculate the ONB
-
-			// ... We calculate the Right & up vector using the forward camera vector
+	// ... First calculate the ONB
+	// ... We calculate the Right & up vector using the forward camera vector
 	m_Right = Vector3::Cross(Vector3::UnitY, m_Forward).Normalized();
 	m_Up = Vector3::Cross(m_Forward, m_Right).Normalized();
 

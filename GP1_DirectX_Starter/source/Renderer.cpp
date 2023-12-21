@@ -144,7 +144,7 @@ namespace dae {
 
 		// Update WorldViewProj matrix before rendering
 		Matrix worldViewProjMatrix{ m_pMesh->GetWorldMatrix() * m_Camera.GetViewMatrix() * m_Camera.GetProjectionMatrix() };
-		m_pMesh->SetMatrix(worldViewProjMatrix);
+		m_pMesh->SetMatrices(worldViewProjMatrix);
 	
 		//2. SET PIPELINE + INVOKE DRAW CALLS (=RENDER)
 		// Render our meshes

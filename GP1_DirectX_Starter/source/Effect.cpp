@@ -7,57 +7,87 @@ using namespace dae;
 
 Effect::Effect(ID3D11Device* pDevice, const std::wstring& assetPath)
 	: m_pEffect{ nullptr },
-	m_pPointTech{ nullptr }, m_pLinearTech{ nullptr }, m_pAnisotropicTech{ nullptr }, m_pDiffuseMapVariable {nullptr },
-	m_CurrentTech { 0 }, m_NrTechniques{ 3 }
+	m_pPointTech{ nullptr }, m_pLinearTech{ nullptr }, m_pAnisotropicTech{ nullptr }, 
+	m_pDiffuseMapVar {nullptr }, m_pSpecularMapVar{ nullptr }, m_pGlossinessMapVar{ nullptr }, m_pNormalMapVar{ nullptr },
+	m_pWorldViewProjVar{ nullptr }, m_pWorldVar { nullptr }, m_pCameraPosVar { nullptr },
+	m_CurrentTech{ 0 }, m_NrTechniques{ 3 }
 {
 	m_pEffect = LoadEffect(pDevice, assetPath);
-
 	if (m_pEffect)
 	{
 		// POINT FILTER AT START
 		std::cout << "SAMPLER_STATE = POINT" << std::endl;
 
-		// Binding
-		m_pPointTech = m_pEffect->GetTechniqueByName("PointTechnique");
-		if (!m_pPointTech->IsValid())
-		{
-			std::wcout << L"Technique not valid\n";
-		}
-
-		m_pLinearTech = m_pEffect->GetTechniqueByName("LinearTechnique");
-		if (!m_pLinearTech->IsValid())
-		{
-			std::wcout << L"Technique not valid\n";
-		}
-
-		m_pAnisotropicTech = m_pEffect->GetTechniqueByName("AnisotropicTechnique");
-		if (!m_pAnisotropicTech->IsValid())
-		{
-			std::wcout << L"Technique not valid\n";
-		}
-
-		m_pWorldViewProjVariable = m_pEffect->GetVariableByName("gWorldViewProj")->AsMatrix();
-		if (!m_pWorldViewProjVariable->IsValid())
-		{
-			std::wcout << L"m_pWorldViewProjVariable not valid\n";
-		}
-
-		m_pDiffuseMapVariable = m_pEffect->GetVariableByName("gDiffuseMap")->AsShaderResource();
-		if (!m_pDiffuseMapVariable->IsValid())
-		{
-			std::wcout << L"m_pDiffuseMapVariable not valid\n";
-		}
-
+		// Bind with our shader ( Capture necessary variables from the GPU)
+		ShaderBinding();
 	}
 }
 
+// Bind everything needed from the shader with our effect
+void Effect::ShaderBinding()
+{
+	// Techniques
+	m_pPointTech = GetTechnique("PointTechnique");
+	m_pLinearTech = GetTechnique( "LinearTechnique");
+	m_pAnisotropicTech = GetTechnique("AnisotropicTechnique");
+
+	// Matrices
+	m_pWorldViewProjVar = GetMatrix("gWorldViewProj");
+	m_pWorldVar = GetMatrix("gWorldMatrix");
+
+	// Shader Resources
+	m_pDiffuseMapVar = GetShaderResource("gDiffuseMap");
+	m_pSpecularMapVar = GetShaderResource("gSpecularMap");
+	m_pGlossinessMapVar = GetShaderResource("gGlossinessMap");
+	m_pNormalMapVar = GetShaderResource("gNormalMap");
+
+	// Vector variables
+	m_pCameraPosVar = m_pEffect->GetVariableByName("gCameraPosition")->AsVector();
+	if (!m_pCameraPosVar->IsValid())
+	{
+		std::cout << "gCameraPosition is not valid\n";
+	}
+}
 
 Effect::~Effect()
 {
-	if (m_pWorldViewProjVariable)
+	if (m_pCameraPosVar)
 	{
-		m_pWorldViewProjVariable->Release();
-		m_pWorldViewProjVariable = nullptr;
+		m_pCameraPosVar->Release();
+		m_pCameraPosVar = nullptr;
+	}
+
+	if (m_pNormalMapVar)
+	{
+		m_pNormalMapVar->Release();
+		m_pNormalMapVar = nullptr;
+	}
+	if (m_pGlossinessMapVar)
+	{
+		m_pGlossinessMapVar->Release();
+		m_pGlossinessMapVar = nullptr;
+	}
+	if (m_pSpecularMapVar)
+	{
+		m_pSpecularMapVar->Release();
+		m_pSpecularMapVar = nullptr;
+	}
+	if (m_pDiffuseMapVar)
+	{
+		m_pDiffuseMapVar->Release();
+		m_pDiffuseMapVar = nullptr;
+	}
+
+	if (m_pWorldVar)
+	{
+		m_pWorldVar->Release();
+		m_pWorldVar = nullptr;
+	}
+
+	if (m_pWorldViewProjVar)
+	{
+		m_pWorldViewProjVar->Release();
+		m_pWorldViewProjVar = nullptr;
 	}
 
 	if (m_pPointTech)
@@ -160,12 +190,34 @@ void Effect::ToggleTechnique()
 }
 
 
-void Effect::SetDiffuseMap(Texture* pDiffuseTexture)
+void Effect::SetDiffuseMap(const Texture* pDiffuseText)
 {
-	if (m_pDiffuseMapVariable)
-		m_pDiffuseMapVariable->SetResource(pDiffuseTexture->GetRSV());
+	if (m_pDiffuseMapVar)
+		m_pDiffuseMapVar->SetResource(pDiffuseText->GetRSV());
 }
 
+void Effect::SetSpecularMap(const Texture* pSpecularText)
+{
+	if (m_pSpecularMapVar)
+		m_pSpecularMapVar->SetResource(pSpecularText->GetRSV());
+}
+void Effect::SetGlossinessMap(const Texture* pGlossinessText)
+{
+	if (m_pGlossinessMapVar)
+		m_pGlossinessMapVar->SetResource(pGlossinessText->GetRSV());
+}
+
+void Effect::SetNormalMap(const Texture* pNormalText)
+{
+	if (m_pNormalMapVar)
+		m_pNormalMapVar->SetResource(pNormalText->GetRSV());
+}
+
+void Effect::SetCameraVar(const Vector3& cameraPos)
+{
+	if (m_pCameraPosVar)
+		m_pCameraPosVar->SetFloatVector(reinterpret_cast<const float*>(&cameraPos));
+}
 
 ID3DX11Effect* Effect::GetEffect() const
 {
@@ -190,5 +242,43 @@ ID3DX11EffectTechnique* Effect::GetTechnique() const
 
 ID3DX11EffectMatrixVariable* Effect::GetWorldViewProjMatrix() const
 {
-	return m_pWorldViewProjVariable;
+	return m_pWorldViewProjVar;
+}
+
+ID3DX11EffectMatrixVariable* Effect::GetWorldMatrix() const
+{
+	return m_pWorldVar;
+}
+
+ID3DX11EffectTechnique* Effect::GetTechnique( const std::string name)
+{
+	ID3DX11EffectTechnique* technique = m_pEffect->GetTechniqueByName(name.c_str());
+	if (!technique->IsValid())
+	{
+		std::wcout << L"Technique not valid\n";
+		return nullptr;
+	}
+	return technique;
+}
+
+ID3DX11EffectMatrixVariable* Effect::GetMatrix(const std::string name)
+{
+	ID3DX11EffectMatrixVariable* matrix = m_pEffect->GetVariableByName(name.c_str())->AsMatrix();
+	if (!matrix->IsValid())
+	{
+		std::cout << name << " not valid\n";
+		return nullptr;
+	}
+	return matrix;
+}
+ID3DX11EffectShaderResourceVariable* Effect::GetShaderResource(const std::string name)
+{
+	ID3DX11EffectShaderResourceVariable* shaderResource = m_pEffect->GetVariableByName(name.c_str())->AsShaderResource();
+	
+	if (!shaderResource->IsValid())
+	{
+		std::cout << name << " not valid\n";
+		return nullptr;
+	}
+	return shaderResource;
 }

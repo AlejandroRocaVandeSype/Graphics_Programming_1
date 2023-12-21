@@ -8,13 +8,14 @@ using namespace dae;
 Mesh::Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertices, const std::vector<uint32_t>& indices)
 	: m_pTechnique{ nullptr }, m_pInputLayout{ nullptr }, m_pEffect{ nullptr }, m_pVertexBuffer{ nullptr },
 	  m_pIndexBuffer{ nullptr}, m_NumIndices{ static_cast<uint32_t>(indices.size()) }, m_pDiffuseTex{ nullptr },
+	m_pNormalTex{ nullptr }, m_pSpecularTex{ nullptr }, m_pGlossinessTex{ nullptr }, 
 	m_TranslationTransform{}, m_RotationTransform{}, m_WorldMatrix{}, m_ScaleTransform{}
 {
 	m_pEffect = new Effect(pDevice, L"Resources/PosCol3D.fx");
 	m_pTechnique = m_pEffect->GetTechnique();
 
 	// CREATE VERTEX LAYOUT
-	static constexpr uint32_t numElements{ 3 };
+	static constexpr uint32_t numElements{ 5 };
 	D3D11_INPUT_ELEMENT_DESC vertexDesc[numElements]{};
 
 	// POSITION
@@ -34,6 +35,18 @@ Mesh::Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertices, co
 	vertexDesc[2].Format = DXGI_FORMAT_R32G32_FLOAT;				// Only R32 and G32
 	vertexDesc[2].AlignedByteOffset = 24;							
 	vertexDesc[2].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+
+	// NORMAL
+	vertexDesc[3].SemanticName = "NORMAL";
+	vertexDesc[3].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	vertexDesc[3].AlignedByteOffset = 32;
+	vertexDesc[3].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+
+	// TANGENT
+	vertexDesc[4].SemanticName = "TANGENT";
+	vertexDesc[4].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	vertexDesc[4].AlignedByteOffset = 44;
+	vertexDesc[4].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 
 	// CREATE INPUT LAYOUT THROUGH THE TECHNIQUE FROM THE EFFECT
 	D3DX11_PASS_DESC passDesc{};
@@ -80,8 +93,12 @@ Mesh::Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertices, co
 	//m_pDiffuseTex = Texture::LoadFromFile(pDevice, "Resources/uv_grid_2.png");
 	m_pDiffuseTex = Texture::LoadFromFile(pDevice, "Resources/vehicle_diffuse.png");
 	m_pEffect->SetDiffuseMap(m_pDiffuseTex);
-	
-
+	m_pNormalTex = Texture::LoadFromFile(pDevice, "Resources/vehicle_normal.png");
+	m_pEffect->SetNormalMap(m_pNormalTex);
+	m_pSpecularTex = Texture::LoadFromFile(pDevice, "Resources/vehicle_specular.png");
+	m_pEffect->SetSpecularMap(m_pSpecularTex);
+	m_pGlossinessTex = Texture::LoadFromFile(pDevice, "Resources/vehicle_gloss.png");
+	m_pEffect->SetGlossinessMap(m_pGlossinessTex);
 }
 
 Mesh::~Mesh()
@@ -114,6 +131,12 @@ Mesh::~Mesh()
 
 	if (m_pDiffuseTex)
 		delete m_pDiffuseTex;
+	if (m_pNormalTex)
+		delete m_pNormalTex;
+	if (m_pSpecularTex)
+		delete m_pSpecularTex;
+	if (m_pGlossinessTex)
+		delete m_pGlossinessTex;
 }
 
 
@@ -135,7 +158,11 @@ void Mesh::Render(ID3D11DeviceContext* pDeviceContext) const
 	//4. Set IndexBuffer
 	pDeviceContext->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 	
-	m_pEffect->SetDiffuseMap(m_pDiffuseTex);
+	// Set Maps for our mesh
+	/*m_pEffect->SetDiffuseMap(m_pDiffuseTex);
+	m_pEffect->SetNormalMap(m_pNormalTex);
+	m_pEffect->SetSpecularMap(m_pSpecularTex);
+	m_pEffect->SetGlossinessMap(m_pGlossinessTex);*/
 
 	//5. Draw
 	D3DX11_TECHNIQUE_DESC techDesc{};
@@ -171,14 +198,20 @@ void Mesh::Translate(const Vector3& translation)
 	m_TranslationTransform = Matrix::CreateTranslation(translation);
 }
 
-void Mesh::SetMatrix(const Matrix& worldViewProjMatrix)
+void Mesh::SetMatrices(const Matrix& worldViewProjMatrix)
 {
 	m_pEffect->GetWorldViewProjMatrix()->SetMatrix(reinterpret_cast<const float*>(&worldViewProjMatrix));
+	m_pEffect->GetWorldMatrix()->SetMatrix(reinterpret_cast<const float*>(&m_WorldMatrix));
 }
 
 Matrix Mesh::GetWorldMatrix() const
 {
 	return m_WorldMatrix;
+}
+
+void Mesh::SetCameraVar(const Vector3& cameraPos)
+{
+	m_pEffect->SetCameraVar(cameraPos);
 }
 
 void Mesh::ToggleTechnique()

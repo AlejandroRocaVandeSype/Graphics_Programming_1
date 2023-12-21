@@ -9,6 +9,8 @@ namespace dae
 		Vector3 position;
 		ColorRGB color{ colors::White };
 		Vector2 textureUV{};
+		Vector3 normal{};
+		Vector3 tangent{};
 	};
 	class Effect;
 	class Texture;
@@ -28,10 +30,11 @@ namespace dae
 		void Render(ID3D11DeviceContext* pDeviceContext) const;
 		void Update(const Timer* pTimer);
 
-		void SetMatrix(const Matrix& worldViewProjMatrix);
+		void SetMatrices(const Matrix& worldViewProjMatrix);
 		void ToggleTechnique();
 
 		Matrix GetWorldMatrix() const;
+		void SetCameraVar(const Vector3& cameraPos);
 
 		void RotateY(float yaw);
 		void Translate(const Vector3& translation);
@@ -47,6 +50,9 @@ namespace dae
 		uint32_t m_NumIndices;
 
 		Texture* m_pDiffuseTex;
+		Texture* m_pSpecularTex;
+		Texture* m_pGlossinessTex;
+		Texture* m_pNormalTex;
 
 		Matrix m_WorldMatrix;
 
