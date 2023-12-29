@@ -31,7 +31,10 @@ namespace dae
 		void Update(const Timer* pTimer);
 
 		void SetMatrices(const Matrix& worldViewProjMatrix);
+
+		// Toggle Rendering parameters
 		void ToggleTechnique();
+		void ToggleNormalMap();
 
 		Matrix GetWorldMatrix() const;
 		void SetCameraVar(const Vector3& cameraPos);

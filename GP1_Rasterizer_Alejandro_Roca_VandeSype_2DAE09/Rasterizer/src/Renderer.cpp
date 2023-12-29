@@ -1710,7 +1710,7 @@ inline ColorRGB Renderer::PixelShading(const Vertex_Out& v) const
 	else
 	{
 		// Don't use normal map.
-		viewAngle = Vector3::Dot(v.normal, -lightDirection);
+		viewAngle = Vector3::Dot(v.normal, lightDirection);
 	}
 
 	// ** LAMBERT'S COSINE LAW **

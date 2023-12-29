@@ -56,10 +56,21 @@ int main(int argc, char* args[])
 				isLooping = false;
 				break;
 			case SDL_KEYUP:
-				//Test for a key
-				if (e.key.keysym.scancode == SDL_SCANCODE_F2)
+			{
+				// Toggle TEXTURE SAMPLING STATES
+				if (e.key.keysym.scancode == SDL_SCANCODE_F4)
+					pRenderer->ToggleFiltering();
+				// Toggle ROTATION
+				if (e.key.keysym.scancode == SDL_SCANCODE_F5)
+					pRenderer->ToggleFiltering();
+				// Toggle NORMAL MAPPING
+				if (e.key.keysym.scancode == SDL_SCANCODE_F6)
+					pRenderer->ToggleNormalMapUse();
+				// Toggle FIREFX MESH
+				if (e.key.keysym.scancode == SDL_SCANCODE_F7)
 					pRenderer->ToggleFiltering();
 				break;
+			}	
 			default: ;
 			}
 		}

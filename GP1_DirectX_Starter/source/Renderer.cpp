@@ -138,7 +138,7 @@ namespace dae {
 			return;
 
 		// 1. CLEAR BUFFERS ( RTV & DSV)
-		constexpr float color[4] = { 0.f, 0.f, 0.3f, 1.f };
+		constexpr float color[4] = { 0.39f, 0.59f, 0.93f, 1.f };
 		m_pDeviceContext->ClearRenderTargetView(m_pRenderTargetView, color);	// Back buffer
 		m_pDeviceContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);	// Depth buffer
 
@@ -157,9 +157,16 @@ namespace dae {
 
 	}
 
+
+	// TOGGLE RENDERING FUNCTIONS 
 	void Renderer::ToggleFiltering()
 	{
 		m_pMesh->ToggleTechnique();
+	}
+
+	void Renderer::ToggleNormalMapUse()
+	{
+		m_pMesh->ToggleNormalMap();
 	}
 
 	HRESULT Renderer::InitializeDirectX()

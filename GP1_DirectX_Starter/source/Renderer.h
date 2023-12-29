@@ -22,7 +22,9 @@ namespace dae
 		void Update(const Timer* pTimer);
 		void Render() const;
 
+		// Toggle Rendering Parameters
 		void ToggleFiltering();
+		void ToggleNormalMapUse();
 
 	private:
 		SDL_Window* m_pWindow{};

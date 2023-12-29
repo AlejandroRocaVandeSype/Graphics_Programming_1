@@ -218,3 +218,8 @@ void Mesh::ToggleTechnique()
 {
 	m_pEffect->ToggleTechnique();
 }
+
+void Mesh::ToggleNormalMap()
+{
+	m_pEffect->ToggleNormalMap();
+}

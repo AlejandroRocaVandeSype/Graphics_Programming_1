@@ -1,7 +1,6 @@
-﻿  main.cpp
-  Renderer.cpp
+﻿  Renderer.cpp
   Generating code
-  Previous IPDB not found, fall back to full compilation.
+  Previous IPDB and IOBJ mismatch, fall back to full compilation.
   All 659 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   Finished generating code
   Rasterizer.vcxproj -> C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_Rasterizer_Alejandro_Roca_VandeSype_2DAE09\bin\x64\Release\Rasterizer.exe

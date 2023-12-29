@@ -9,13 +9,14 @@ Effect::Effect(ID3D11Device* pDevice, const std::wstring& assetPath)
 	: m_pEffect{ nullptr },
 	m_pPointTech{ nullptr }, m_pLinearTech{ nullptr }, m_pAnisotropicTech{ nullptr }, 
 	m_pDiffuseMapVar {nullptr }, m_pSpecularMapVar{ nullptr }, m_pGlossinessMapVar{ nullptr }, m_pNormalMapVar{ nullptr },
-	m_pWorldViewProjVar{ nullptr }, m_pWorldVar { nullptr }, m_pCameraPosVar { nullptr },
+	m_pWorldViewProjVar{ nullptr }, m_pWorldVar { nullptr }, m_pCameraPosVar { nullptr }, 
+	m_pUseNormalMapVar{ nullptr }, 
 	m_CurrentTech{ 0 }, m_NrTechniques{ 3 }
 {
 	m_pEffect = LoadEffect(pDevice, assetPath);
 	if (m_pEffect)
 	{
-		// POINT FILTER AT START
+		// ALWAYS START WITH POINT FILTER 
 		std::cout << "SAMPLER_STATE = POINT" << std::endl;
 
 		// Bind with our shader ( Capture necessary variables from the GPU)
@@ -41,11 +42,19 @@ void Effect::ShaderBinding()
 	m_pGlossinessMapVar = GetShaderResource("gGlossinessMap");
 	m_pNormalMapVar = GetShaderResource("gNormalMap");
 
+	// Rendering parameters
+	m_pUseNormalMapVar = m_pEffect->GetVariableByName("gUseNormalMap")->AsScalar();
+	if (!m_pUseNormalMapVar->IsValid())
+	{
+		std::cout << "gUseNormalMap variable is not valid\n";
+	}
+	m_pUseNormalMapVar->SetBool(true);
+
 	// Vector variables
 	m_pCameraPosVar = m_pEffect->GetVariableByName("gCameraPosition")->AsVector();
 	if (!m_pCameraPosVar->IsValid())
 	{
-		std::cout << "gCameraPosition is not valid\n";
+		std::cout << "gCameraPosition variable is not valid\n";
 	}
 }
 
@@ -55,6 +64,12 @@ Effect::~Effect()
 	{
 		m_pCameraPosVar->Release();
 		m_pCameraPosVar = nullptr;
+	}
+
+	if (m_pUseNormalMapVar)
+	{
+		m_pUseNormalMapVar->Release();
+		m_pUseNormalMapVar = nullptr;
 	}
 
 	if (m_pNormalMapVar)
@@ -189,6 +204,27 @@ void Effect::ToggleTechnique()
 	}
 }
 
+void Effect::ToggleNormalMap()
+{
+	if (m_pUseNormalMapVar)
+	{
+		bool useNormalMap{ true };
+		m_pUseNormalMapVar->GetBool(&useNormalMap);
+
+		useNormalMap = !useNormalMap;
+		m_pUseNormalMapVar->SetBool(useNormalMap);
+
+		if (useNormalMap)
+		{
+			std::cout << "Sample Normal Map : ON\n";
+		}
+		else
+		{
+			std::cout << "Sample Normal Map : OFF\n";
+		}
+	}
+}
+
 
 void Effect::SetDiffuseMap(const Texture* pDiffuseText)
 {
@@ -250,18 +286,18 @@ ID3DX11EffectMatrixVariable* Effect::GetWorldMatrix() const
 	return m_pWorldVar;
 }
 
-ID3DX11EffectTechnique* Effect::GetTechnique( const std::string name)
+ID3DX11EffectTechnique* Effect::GetTechnique( const std::string& name)
 {
 	ID3DX11EffectTechnique* technique = m_pEffect->GetTechniqueByName(name.c_str());
 	if (!technique->IsValid())
 	{
-		std::wcout << L"Technique not valid\n";
+		std::cout << "Technique not valid\n";
 		return nullptr;
 	}
 	return technique;
 }
 
-ID3DX11EffectMatrixVariable* Effect::GetMatrix(const std::string name)
+ID3DX11EffectMatrixVariable* Effect::GetMatrix(const std::string& name)
 {
 	ID3DX11EffectMatrixVariable* matrix = m_pEffect->GetVariableByName(name.c_str())->AsMatrix();
 	if (!matrix->IsValid())
@@ -271,7 +307,7 @@ ID3DX11EffectMatrixVariable* Effect::GetMatrix(const std::string name)
 	}
 	return matrix;
 }
-ID3DX11EffectShaderResourceVariable* Effect::GetShaderResource(const std::string name)
+ID3DX11EffectShaderResourceVariable* Effect::GetShaderResource(const std::string& name)
 {
 	ID3DX11EffectShaderResourceVariable* shaderResource = m_pEffect->GetVariableByName(name.c_str())->AsShaderResource();
 	
