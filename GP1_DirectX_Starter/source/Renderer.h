@@ -25,6 +25,8 @@ namespace dae
 		// Toggle Rendering Parameters
 		void ToggleFiltering();
 		void ToggleNormalMapUse();
+		void ToggleRotation(Timer* pTimer);
+		void ToggleShadingMode();
 
 	private:
 		SDL_Window* m_pWindow{};
@@ -33,6 +35,7 @@ namespace dae
 		int m_Height{};
 
 		bool m_IsInitialized{ false };
+		bool m_DoRotation{ false };
 
 		Mesh* m_pMesh;
 
@@ -48,6 +51,15 @@ namespace dae
 		ID3D11RenderTargetView* m_pRenderTargetView;		// render-target subresources 
 		HRESULT InitializeDirectX();
 		//...
+
+		enum class ShadingMode
+		{
+			ObservedArea,		// Lambert Cosine Law
+			Diffuse,			// Diffuse (incl OA)
+			Specular,			// Specular (incly OA)
+			Combined			// All
+		};
+		ShadingMode m_ShadingMode;
 
 		void InitializeMeshes();
 	};

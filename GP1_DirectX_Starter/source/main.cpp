@@ -62,13 +62,16 @@ int main(int argc, char* args[])
 					pRenderer->ToggleFiltering();
 				// Toggle ROTATION
 				if (e.key.keysym.scancode == SDL_SCANCODE_F5)
-					pRenderer->ToggleFiltering();
+					pRenderer->ToggleRotation(pTimer);
 				// Toggle NORMAL MAPPING
 				if (e.key.keysym.scancode == SDL_SCANCODE_F6)
 					pRenderer->ToggleNormalMapUse();
 				// Toggle FIREFX MESH
 				if (e.key.keysym.scancode == SDL_SCANCODE_F7)
 					pRenderer->ToggleFiltering();
+				// Toggle SHADING MODE
+				if (e.key.keysym.scancode == SDL_SCANCODE_F8)
+					pRenderer->ToggleShadingMode();
 				break;
 			}	
 			default: ;

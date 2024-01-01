@@ -223,3 +223,8 @@ void Mesh::ToggleNormalMap()
 {
 	m_pEffect->ToggleNormalMap();
 }
+
+void Mesh::ToggleShadingMode(const int shadingMode)
+{
+	m_pEffect->ToggleShadingMode(shadingMode);
+}

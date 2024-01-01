@@ -29,6 +29,7 @@ namespace dae
 		// Toggle Rendering parameters
 		void ToggleTechnique();
 		void ToggleNormalMap();
+		void ToggleShadingMode(const int shadingMode);
 
 	private:
 
@@ -51,6 +52,7 @@ namespace dae
 
 		// Rendering Variables
 		ID3DX11EffectScalarVariable* m_pUseNormalMapVar;
+		ID3DX11EffectScalarVariable* m_pShadingModeVar;
 
 		ID3DX11EffectVectorVariable* m_pCameraPosVar;
 

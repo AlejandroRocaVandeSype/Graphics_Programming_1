@@ -10,7 +10,7 @@ Effect::Effect(ID3D11Device* pDevice, const std::wstring& assetPath)
 	m_pPointTech{ nullptr }, m_pLinearTech{ nullptr }, m_pAnisotropicTech{ nullptr }, 
 	m_pDiffuseMapVar {nullptr }, m_pSpecularMapVar{ nullptr }, m_pGlossinessMapVar{ nullptr }, m_pNormalMapVar{ nullptr },
 	m_pWorldViewProjVar{ nullptr }, m_pWorldVar { nullptr }, m_pCameraPosVar { nullptr }, 
-	m_pUseNormalMapVar{ nullptr }, 
+	m_pUseNormalMapVar{ nullptr }, m_pShadingModeVar{ nullptr },
 	m_CurrentTech{ 0 }, m_NrTechniques{ 3 }
 {
 	m_pEffect = LoadEffect(pDevice, assetPath);
@@ -49,6 +49,12 @@ void Effect::ShaderBinding()
 		std::cout << "gUseNormalMap variable is not valid\n";
 	}
 	m_pUseNormalMapVar->SetBool(true);
+	m_pShadingModeVar = m_pEffect->GetVariableByName("gShadingMode")->AsScalar();
+	if (!m_pUseNormalMapVar->IsValid())
+	{
+		std::cout << "gShadingMode variable is not valid\n";
+	}
+	m_pShadingModeVar->SetInt(3);  // Combined at start
 
 	// Vector variables
 	m_pCameraPosVar = m_pEffect->GetVariableByName("gCameraPosition")->AsVector();
@@ -225,6 +231,10 @@ void Effect::ToggleNormalMap()
 	}
 }
 
+void Effect::ToggleShadingMode(const int shadingMode)
+{
+	m_pShadingModeVar->SetInt(shadingMode);
+}
 
 void Effect::SetDiffuseMap(const Texture* pDiffuseText)
 {

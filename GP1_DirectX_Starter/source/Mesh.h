@@ -35,6 +35,7 @@ namespace dae
 		// Toggle Rendering parameters
 		void ToggleTechnique();
 		void ToggleNormalMap();
+		void ToggleShadingMode(const int shadingMode);
 
 		Matrix GetWorldMatrix() const;
 		void SetCameraVar(const Vector3& cameraPos);

@@ -9,6 +9,7 @@ namespace dae {
 		m_pWindow(pWindow), m_pDevice { nullptr }, m_pDeviceContext{ nullptr },
 		m_pSwapChain{ nullptr }, m_pDepthStencilBuffer{ nullptr }, m_pDepthStencilView{ nullptr },
 		m_pRenderTargetBuffer{ nullptr }, m_pRenderTargetView{ nullptr }, m_pMesh{ nullptr }, m_Camera{}
+		, m_ShadingMode{ ShadingMode::Combined }
 	{
 		//Initialize
 		SDL_GetWindowSize(pWindow, &m_Width, &m_Height);
@@ -32,13 +33,6 @@ namespace dae {
 
 		InitializeMeshes();
 
-		// Camera with Constant buffer View
-		// Reinterpret matrix data -> Layout the floats from the matrix in a list ( Traspose, etc). SetMatrix
-		// accepts floats not a matrix
-		// Upgrade to quad -> With 2 triangles best
-		// Add UV variable to fx file
-		// Texture code in the texture class
-		// In Texture Constuct free after using it
 	}
 
 	void Renderer::InitializeMeshes()
@@ -65,7 +59,6 @@ namespace dae {
 		//m_pMesh = new Mesh(m_pDevice, vertices, indices);
 
 		// Vehicle Mesh
-
 		std::vector<Vertex_PosCol> vertices{};
 		std::vector<uint32_t> indices{};
 		Utils::ParseOBJ("Resources/vehicle.obj", vertices, indices);
@@ -128,7 +121,8 @@ namespace dae {
 	void Renderer::Update(const Timer* pTimer)
 	{
 		m_Camera.Update(pTimer);
-		m_pMesh->Update(pTimer);
+		if(m_DoRotation)
+			m_pMesh->Update(pTimer);
 	}
 
 
@@ -167,6 +161,49 @@ namespace dae {
 	void Renderer::ToggleNormalMapUse()
 	{
 		m_pMesh->ToggleNormalMap();
+	}
+
+	void Renderer::ToggleRotation(Timer* pTimer)
+	{
+		if (m_DoRotation)
+		{
+			
+			pTimer->Stop();
+
+		}
+		else
+		{
+			// It was stopped already -> Continue the timer
+			pTimer->Start();
+		}
+
+		m_DoRotation = !m_DoRotation;
+		pTimer->Update();
+	}
+
+	void Renderer::ToggleShadingMode()
+	{
+		switch (m_ShadingMode)
+		{
+		case dae::Renderer::ShadingMode::ObservedArea:
+			std::cout << "Shading Mode : DiffuseLambert " << std::endl;
+			m_ShadingMode = ShadingMode::Diffuse;
+			break;
+		case dae::Renderer::ShadingMode::Diffuse:
+			std::cout << "Shading Mode : SpecularPhong" << std::endl;
+			m_ShadingMode = ShadingMode::Specular;
+			break;
+		case dae::Renderer::ShadingMode::Specular:
+			std::cout << "Shading Mode : Combined" << std::endl;
+			m_ShadingMode = ShadingMode::Combined;
+			break;
+		case dae::Renderer::ShadingMode::Combined:
+			std::cout << "Shading Mode : Cosine Lambert" << std::endl;
+			m_ShadingMode = ShadingMode::ObservedArea;
+			break;
+		}
+
+		m_pMesh->ToggleShadingMode(static_cast<int>(m_ShadingMode));
 	}
 
 	HRESULT Renderer::InitializeDirectX()
