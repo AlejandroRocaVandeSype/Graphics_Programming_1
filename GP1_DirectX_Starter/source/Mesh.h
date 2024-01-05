@@ -1,6 +1,8 @@
 #ifndef DirectX_MESH
 #define DirectX_MESH
 
+#include <unordered_map> 
+
 namespace dae
 {
 	
@@ -12,14 +14,15 @@ namespace dae
 		Vector3 normal{};
 		Vector3 tangent{};
 	};
-	class Effect;
+	class VehicleEffect;
 	class Texture;
 	class Mesh final
 	{
 	public:
 		
 
-		Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertices, const std::vector<uint32_t>& indices);
+		Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertices, const std::vector<uint32_t>& indices,
+			const std::wstring& shaderPath, const std::unordered_map<std::string, std::string>& texturesPaths);
 		~Mesh();
 
 		Mesh(const Mesh&) = delete;
@@ -30,7 +33,7 @@ namespace dae
 		void Render(ID3D11DeviceContext* pDeviceContext) const;
 		void Update(const Timer* pTimer);
 
-		void SetMatrices(const Matrix& worldViewProjMatrix);
+		void UpdateMatrices(const Matrix& worldViewProjMatrix);
 
 		// Toggle Rendering parameters
 		void ToggleTechnique();
@@ -47,16 +50,13 @@ namespace dae
 
 		ID3DX11EffectTechnique* m_pTechnique;
 		ID3D11InputLayout* m_pInputLayout;
-		Effect* m_pEffect;
+		VehicleEffect* m_pEffect;
 
 		ID3D11Buffer* m_pVertexBuffer;				// Buffer with all the vertices from our MESH
 		ID3D11Buffer* m_pIndexBuffer;				//	  "		"	"	"   indices	  "	  "    "
 		uint32_t m_NumIndices;
 
-		Texture* m_pDiffuseTex;
-		Texture* m_pSpecularTex;
-		Texture* m_pGlossinessTex;
-		Texture* m_pNormalTex;
+		std::unordered_map<std::string, Texture*> m_Textures;
 
 		Matrix m_WorldMatrix;
 

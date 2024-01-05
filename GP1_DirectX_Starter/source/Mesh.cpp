@@ -1,17 +1,18 @@
 #include "pch.h"
 #include "Mesh.h"
-#include "Effect.h"
+#include "VehicleEffect.h"
 #include "Texture.h"
 
 using namespace dae;
 
-Mesh::Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertices, const std::vector<uint32_t>& indices)
+Mesh::Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertices, const std::vector<uint32_t>& indices,
+	const std::wstring& shaderPath, const std::unordered_map<std::string, std::string>& texturesPaths)
 	: m_pTechnique{ nullptr }, m_pInputLayout{ nullptr }, m_pEffect{ nullptr }, m_pVertexBuffer{ nullptr },
-	  m_pIndexBuffer{ nullptr}, m_NumIndices{ static_cast<uint32_t>(indices.size()) }, m_pDiffuseTex{ nullptr },
-	m_pNormalTex{ nullptr }, m_pSpecularTex{ nullptr }, m_pGlossinessTex{ nullptr }, 
+	  m_pIndexBuffer{ nullptr}, m_NumIndices{ static_cast<uint32_t>(indices.size()) },
 	m_TranslationTransform{}, m_RotationTransform{}, m_WorldMatrix{}, m_ScaleTransform{}
 {
-	m_pEffect = new Effect(pDevice, L"Resources/PosCol3D.fx");
+	//m_pEffect = new Effect(pDevice, L"Resources/PosCol3D.fx");
+	m_pEffect = new VehicleEffect(pDevice, shaderPath);
 	m_pTechnique = m_pEffect->GetTechnique();
 
 	// CREATE VERTEX LAYOUT
@@ -90,15 +91,19 @@ Mesh::Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertices, co
 	if (FAILED(result))
 		return;
 
-	//m_pDiffuseTex = Texture::LoadFromFile(pDevice, "Resources/uv_grid_2.png");
-	m_pDiffuseTex = Texture::LoadFromFile(pDevice, "Resources/vehicle_diffuse.png");
-	m_pEffect->SetDiffuseMap(m_pDiffuseTex);
-	m_pNormalTex = Texture::LoadFromFile(pDevice, "Resources/vehicle_normal.png");
-	m_pEffect->SetNormalMap(m_pNormalTex);
-	m_pSpecularTex = Texture::LoadFromFile(pDevice, "Resources/vehicle_specular.png");
-	m_pEffect->SetSpecularMap(m_pSpecularTex);
-	m_pGlossinessTex = Texture::LoadFromFile(pDevice, "Resources/vehicle_gloss.png");
-	m_pEffect->SetGlossinessMap(m_pGlossinessTex);
+	// TEXTURES LOAD FOR OUR MESH
+	m_Textures.reserve(texturesPaths.size());
+	std::string key{};
+	std::string texturePath{};
+	for (const auto& path : texturesPaths)
+	{
+		key = path.first;
+		texturePath = path.second;
+		m_Textures.emplace(key, Texture::LoadFromFile(pDevice, texturePath));
+	}
+	m_pEffect->SetMaps(m_Textures);
+
+	
 }
 
 Mesh::~Mesh()
@@ -129,14 +134,11 @@ Mesh::~Mesh()
 
 	delete m_pEffect;
 
-	if (m_pDiffuseTex)
-		delete m_pDiffuseTex;
-	if (m_pNormalTex)
-		delete m_pNormalTex;
-	if (m_pSpecularTex)
-		delete m_pSpecularTex;
-	if (m_pGlossinessTex)
-		delete m_pGlossinessTex;
+	for (auto& pair : m_Textures)
+	{
+		delete pair.second;	
+	}
+	m_Textures.clear();
 }
 
 
@@ -157,12 +159,6 @@ void Mesh::Render(ID3D11DeviceContext* pDeviceContext) const
 
 	//4. Set IndexBuffer
 	pDeviceContext->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-	
-	// Set Maps for our mesh
-	/*m_pEffect->SetDiffuseMap(m_pDiffuseTex);
-	m_pEffect->SetNormalMap(m_pNormalTex);
-	m_pEffect->SetSpecularMap(m_pSpecularTex);
-	m_pEffect->SetGlossinessMap(m_pGlossinessTex);*/
 
 	//5. Draw
 	D3DX11_TECHNIQUE_DESC techDesc{};
@@ -198,10 +194,10 @@ void Mesh::Translate(const Vector3& translation)
 	m_TranslationTransform = Matrix::CreateTranslation(translation);
 }
 
-void Mesh::SetMatrices(const Matrix& worldViewProjMatrix)
+void Mesh::UpdateMatrices(const Matrix& worldViewProjMatrix)
 {
-	m_pEffect->GetWorldViewProjMatrix()->SetMatrix(reinterpret_cast<const float*>(&worldViewProjMatrix));
-	m_pEffect->GetWorldMatrix()->SetMatrix(reinterpret_cast<const float*>(&m_WorldMatrix));
+	m_pEffect->UpdateWorldViewProjMatrix(worldViewProjMatrix);
+	m_pEffect->UpdateWorldMatrix(m_WorldMatrix);
 }
 
 Matrix Mesh::GetWorldMatrix() const

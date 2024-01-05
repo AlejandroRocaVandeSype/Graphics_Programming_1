@@ -8,7 +8,7 @@ namespace dae {
 	Renderer::Renderer(SDL_Window* pWindow) :
 		m_pWindow(pWindow), m_pDevice { nullptr }, m_pDeviceContext{ nullptr },
 		m_pSwapChain{ nullptr }, m_pDepthStencilBuffer{ nullptr }, m_pDepthStencilView{ nullptr },
-		m_pRenderTargetBuffer{ nullptr }, m_pRenderTargetView{ nullptr }, m_pMesh{ nullptr }, m_Camera{}
+		m_pRenderTargetBuffer{ nullptr }, m_pRenderTargetView{ nullptr }, m_pVehicle{ nullptr }, m_Camera{}
 		, m_ShadingMode{ ShadingMode::Combined }
 	{
 		//Initialize
@@ -59,16 +59,30 @@ namespace dae {
 		//m_pMesh = new Mesh(m_pDevice, vertices, indices);
 
 		// Vehicle Mesh
-		std::vector<Vertex_PosCol> vertices{};
-		std::vector<uint32_t> indices{};
-		Utils::ParseOBJ("Resources/vehicle.obj", vertices, indices);
+		std::vector<Vertex_PosCol> vertices_vehicle{};
+		std::vector<uint32_t> indices_vehicle{};
+		Utils::ParseOBJ("Resources/vehicle.obj", vertices_vehicle, indices_vehicle);
+
+		std::unordered_map<std::string, std::string> vehicleTextures;
+		vehicleTextures.emplace("diffuse", "Resources/vehicle_diffuse.png");
+		vehicleTextures.emplace("glossiness", "Resources/vehicle_gloss.png");
+		vehicleTextures.emplace("normal", "Resources/vehicle_normal.png");
+		vehicleTextures.emplace("specular", "Resources/vehicle_specular.png");
 		
-		m_pMesh = new Mesh(m_pDevice, vertices, indices);
+		m_pVehicle = new Mesh(m_pDevice, vertices_vehicle, indices_vehicle, L"Resources/vehicle.fx", vehicleTextures);
+
+		// FireFX Mesh
+		std::vector<Vertex_PosCol> vertices_fire{};
+		std::vector<uint32_t> indices_fire{};
+		Utils::ParseOBJ("Resources/fireFX.obj", vertices_fire, indices_fire);
+
+		//m_pFireFX = new Mesh(m_pDevice, vertices_fire, indices_fire, L"Resources/fire.fx");
 	}
 
 	Renderer::~Renderer()
 	{
-		delete m_pMesh;
+		delete m_pVehicle;
+		delete m_pFireFX;
 
 		// RESOURCES ARE RELEASED IN REVERSE ORDER
 		if (m_pRenderTargetView)
@@ -122,7 +136,7 @@ namespace dae {
 	{
 		m_Camera.Update(pTimer);
 		if(m_DoRotation)
-			m_pMesh->Update(pTimer);
+			m_pVehicle->Update(pTimer);
 	}
 
 
@@ -137,12 +151,12 @@ namespace dae {
 		m_pDeviceContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);	// Depth buffer
 
 		// Update WorldViewProj matrix before rendering
-		Matrix worldViewProjMatrix{ m_pMesh->GetWorldMatrix() * m_Camera.GetViewMatrix() * m_Camera.GetProjectionMatrix() };
-		m_pMesh->SetMatrices(worldViewProjMatrix);
+		Matrix worldViewProjMatrix{ m_pVehicle->GetWorldMatrix() * m_Camera.GetViewMatrix() * m_Camera.GetProjectionMatrix() };
+		m_pVehicle->UpdateMatrices(worldViewProjMatrix);
 	
 		//2. SET PIPELINE + INVOKE DRAW CALLS (=RENDER)
 		// Render our meshes
-		m_pMesh->Render(m_pDeviceContext);
+		m_pVehicle->Render(m_pDeviceContext);
 
 
 		//3. PRESENT BACKBUFFER (SWAP)
@@ -155,12 +169,12 @@ namespace dae {
 	// TOGGLE RENDERING FUNCTIONS 
 	void Renderer::ToggleFiltering()
 	{
-		m_pMesh->ToggleTechnique();
+		m_pVehicle->ToggleTechnique();
 	}
 
 	void Renderer::ToggleNormalMapUse()
 	{
-		m_pMesh->ToggleNormalMap();
+		m_pVehicle->ToggleNormalMap();
 	}
 
 	void Renderer::ToggleRotation(Timer* pTimer)
@@ -203,7 +217,7 @@ namespace dae {
 			break;
 		}
 
-		m_pMesh->ToggleShadingMode(static_cast<int>(m_ShadingMode));
+		m_pVehicle->ToggleShadingMode(static_cast<int>(m_ShadingMode));
 	}
 
 	HRESULT Renderer::InitializeDirectX()

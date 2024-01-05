@@ -1,3 +1,8 @@
+// SHADING MODES
+#define SHADING_MODE_OBSERVEDAREA 0
+#define SHADING_MODE_DIFFUSE 1
+#define SHADING_MODE_SPECULAR 2
+#define SHADING_MODE_COMBINED 3
 
 // *** GLOBAL VARIABLES ***
 float4x4 gWorldViewProj : WorldViewProjection;
@@ -16,11 +21,6 @@ const float gShininess : Shininess = 25.0f;
 
 bool gUseNormalMap : UseNormalMap;
 int gShadingMode : ShadingMode;
-
-#define SHADING_MODE_OBSERVEDAREA 0
-#define SHADING_MODE_DIFFUSE 1
-#define SHADING_MODE_SPECULAR 2
-#define SHADING_MODE_COMBINED 3
 
 
 // SAMPLE OUR SHADER WITH DIFFERENT SAMPLER STATES
@@ -151,7 +151,7 @@ float4 Phong(const float3 ks, const float exp, const float3 l, const float3 v, c
     return specularReflect;
 }
 
-// LAMBERT PHONG 
+// SPECULAR LAMBERT
 float4 CalculateSpecular(SamplerState samplerType, VS_OUTPUT input, float viewAngle, float3 ambient)
 {
     float3 sampledGloss = gGlossinessMap.Sample(samplerType, input.TextureUV);
@@ -165,6 +165,20 @@ float4 CalculateSpecular(SamplerState samplerType, VS_OUTPUT input, float viewAn
     return gLightIntensity * Phong(sampledSpecular, sampledGloss.r, -gLightDirection, invViewDirection, -input.Normal)
 	* viewAngle + float4(ambient.r, ambient.g, ambient.b, 1.f);
 
+}
+
+float4 CalculateCombined(SamplerState samplerType, VS_OUTPUT input, float viewAngle, float3 ambient)
+{
+    if (viewAngle < 0.f)
+        return float4(0.f, 0.f, 0.f, 1.f);
+			
+    float4 specular = CalculateSpecular(samplerType, input, viewAngle, ambient);
+    float4 diffuse = float4(gDiffuseMap.Sample(samplerType, input.TextureUV) * input.Color, 1.f);
+				
+    float4 finalColor = specular + diffuse;
+			
+    return gLightIntensity * finalColor * float4(viewAngle, viewAngle, viewAngle, 1.f)
+						+ float4(ambient.r, ambient.g, ambient.b, 1.f);
 }
 
 //--------------------------------------------------------
@@ -194,33 +208,14 @@ float4 CalculatePS(SamplerState samplerType, VS_OUTPUT input)
         case SHADING_MODE_DIFFUSE:
             return gLightIntensity * float4(gDiffuseMap.Sample(samplerType, input.TextureUV) * input.Color, 1.f) + float4(ambient.r, ambient.g, ambient.b, 1.f);
 		
-        case SHADING_MODE_SPECULAR:
-            {
+        case SHADING_MODE_SPECULAR:         
                 return CalculateSpecular(samplerType, input, viewAngle, ambient);
-            }	
 		
         case SHADING_MODE_COMBINED:
-			{
-                if (viewAngle < 0.f)
-                    return float4(0.f, 0.f, 0.f, 1.f);
-			
-                float4 specular = CalculateSpecular(samplerType, input, viewAngle, ambient);
-                float4 diffuse = float4(gDiffuseMap.Sample(samplerType, input.TextureUV) * input.Color, 1.f);
-				
-                float4 finalColor = specular + diffuse;
-			
-                return gLightIntensity * finalColor * float4(viewAngle, viewAngle, viewAngle, 1.f)
-						+ float4(ambient.r, ambient.g, ambient.b, 1.f);
-            }
+				return CalculateCombined(samplerType, input, viewAngle, ambient);
 		
-		default:
-			{
-                if (viewAngle < 0.f)
-                    return float4(0.f, 0.f, 0.f, 1.f);
-			
-                return gLightIntensity * float4(gDiffuseMap.Sample(samplerType, input.TextureUV) * input.Color, 1.f) * float4(viewAngle, viewAngle, viewAngle, 1.f)
-						+ float4(ambient.r, ambient.g, ambient.b, 1.f);
-            }
+		default: // By Default use Combined Shading Mode
+            return CalculateCombined(samplerType, input, viewAngle, ambient);
           
         
     }

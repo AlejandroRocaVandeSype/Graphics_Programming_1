@@ -37,7 +37,8 @@ namespace dae
 		bool m_IsInitialized{ false };
 		bool m_DoRotation{ false };
 
-		Mesh* m_pMesh;
+		Mesh* m_pVehicle;
+		Mesh* m_pFireFX;
 
 		Camera m_Camera;
 

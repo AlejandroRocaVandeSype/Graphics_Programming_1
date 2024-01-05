@@ -1,3 +1,8 @@
+// SHADING MODES
+#define SHADING_MODE_OBSERVEDAREA 0
+#define SHADING_MODE_DIFFUSE 1
+#define SHADING_MODE_SPECULAR 2
+#define SHADING_MODE_COMBINED 3
 
 // *** GLOBAL VARIABLES ***
 float4x4 gWorldViewProj : WorldViewProjection;
@@ -16,11 +21,6 @@ const float gShininess : Shininess = 25.0f;
 
 bool gUseNormalMap : UseNormalMap;
 int gShadingMode : ShadingMode;
-
-#define SHADING_MODE_OBSERVEDAREA 0
-#define SHADING_MODE_DIFFUSE 1
-#define SHADING_MODE_SPECULAR 2
-#define SHADING_MODE_COMBINED 3
 
 
 // SAMPLE OUR SHADER WITH DIFFERENT SAMPLER STATES
@@ -151,7 +151,7 @@ float4 Phong(const float3 ks, const float exp, const float3 l, const float3 v, c
     return specularReflect;
 }
 
-// LAMBERT PHONG 
+// SPECULAR LAMBERT
 float4 CalculateSpecular(SamplerState samplerType, VS_OUTPUT input, float viewAngle, float3 ambient)
 {
     float3 sampledGloss = gGlossinessMap.Sample(samplerType, input.TextureUV);
