@@ -27,6 +27,7 @@ namespace dae
 		void ToggleNormalMapUse();
 		void ToggleRotation(Timer* pTimer);
 		void ToggleShadingMode();
+		void ToggleFireFXMesh();
 
 	private:
 		SDL_Window* m_pWindow{};
@@ -36,6 +37,7 @@ namespace dae
 
 		bool m_IsInitialized{ false };
 		bool m_DoRotation{ false };
+		bool m_DoRenderFireFX{ true };
 
 		Mesh* m_pVehicle;
 		Mesh* m_pFireFX;

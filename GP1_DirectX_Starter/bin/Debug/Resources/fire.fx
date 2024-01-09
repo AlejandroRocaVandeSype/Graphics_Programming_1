@@ -33,7 +33,6 @@ struct VS_INPUT
 struct VS_OUTPUT		// All values are interpolated
 {
     float4 Position : SV_POSITION; // SV_POSITION is mandatory so the GPU has the needed data for the next drawing step
-    float4 WorldPosition : TEXCOORD0;
     float3 Color : COLOR;
     float2 TextureUV : TEXCOORD1;
     float3 Normal : NORMAL;
@@ -66,20 +65,68 @@ VS_OUTPUT VS(VS_INPUT input)
 // want to render
 //--------------------------------------------------------
 float4 PS_POINT(VS_OUTPUT input) : SV_TARGET
-{
-	//return float4(input.Color, 1.f);
-	return float4(gDiffuseMap.Sample(samPoint, input.TextureUV) * input.Color , 1.f);
-   // return CalculatePS(samPoint, input);
+{    
+    float4 diffuseColor = gDiffuseMap.Sample(samPoint, input.TextureUV);
+    
+    return diffuseColor;
 	
 }
+
+RasterizerState gRasterizerState
+{
+    CullMode = none;
+    FrontCounterClockWise = false; 
+};
+
+// BLEND returned value
+BlendState gBlendState
+{
+    BlendEnable[0] = true;
+    SrcBlend = src_alpha;
+    DestBlend = inv_src_alpha;
+    BlendOp = add;
+    SrcBlendAlpha = zero;
+    DestBlendAlpha = zero;
+    BlendOpAlpha = add;
+    RenderTargetWriteMask[0] = 0x0F;
+};
+
+// Perform a depth test without writing into the depth buffer
+DepthStencilState gDepthStencilState
+{
+    DepthEnable = true;
+    DepthWriteMask = zero;
+    DepthFunc = less;
+    StencilEnable = false;
+    
+    StencilReadMask = 0x0F;
+    StencilWriteMask = 0x0F;
+
+    FrontFaceStencilFunc = always;
+    BackFaceStencilFunc = always;
+
+    FrontFaceStencilDepthFail = keep;
+    BackFaceStencilDepthFail = keep;
+
+    FrontFaceStencilPass = keep;
+    BackFaceStencilPass = keep;
+
+    FrontFaceStencilFail = keep;
+    BackFaceStencilFail = keep;
+
+};
 
 
 technique11 DefaultTechnique
 {
     pass P0
     {
+        SetRasterizerState(gRasterizerState);
+        SetDepthStencilState(gDepthStencilState, 0);
+        SetBlendState(gBlendState, float4(0.0f, 0.0f, 0.0f, 0.0f), 0xFFFFFFFF);
         SetVertexShader(CompileShader(vs_5_0, VS()));
         SetGeometryShader(NULL);
         SetPixelShader(CompileShader(ps_5_0, PS_POINT()));
+       
     }
 }

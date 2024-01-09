@@ -252,6 +252,14 @@ float4 PS_ANISOTROPIC(VS_OUTPUT input) : SV_TARGET
 	return CalculatePS(samAnisotropic, input);
 }
 
+
+
+RasterizerState gRasterizerState
+{
+    CullMode = none;
+    FrontCounterClockWise = false;
+};
+
 //--------------------------------------------------------
 // Techniques
 // Needed because we are using the Effect Framework
@@ -261,6 +269,9 @@ technique11 PointTechnique
 {
 	pass P0
 	{
+        SetRasterizerState(NULL); 										// Use default rasterizer state
+        SetDepthStencilState(NULL, 0);									// Use default depth stencil state
+        SetBlendState(NULL, float4(0.0f, 0.0f, 0.0f, 0.0f), 0xFFFFFFFF); // Use default blend state
 		SetVertexShader( CompileShader( vs_5_0, VS() ) );
 		SetGeometryShader( NULL );
 		SetPixelShader( CompileShader( ps_5_0, PS_POINT() ) );
@@ -271,6 +282,9 @@ technique11 LinearTechnique
 {
 	pass P0
 	{
+        SetRasterizerState(NULL); 
+        SetDepthStencilState(NULL, 0); 
+        SetBlendState(NULL, float4(0.0f, 0.0f, 0.0f, 0.0f), 0xFFFFFFFF); 
 		SetVertexShader(CompileShader(vs_5_0, VS()));
 		SetGeometryShader(NULL);
 		SetPixelShader(CompileShader(ps_5_0, PS_LINEAR()));
@@ -281,6 +295,9 @@ technique11 AnisotropicTechnique
 {
 	pass P0
 	{
+        SetRasterizerState(NULL); 
+        SetDepthStencilState(NULL, 0); 
+        SetBlendState(NULL, float4(0.0f, 0.0f, 0.0f, 0.0f), 0xFFFFFFFF);
 		SetVertexShader(CompileShader(vs_5_0, VS()));
 		SetGeometryShader(NULL);
 		SetPixelShader(CompileShader(ps_5_0, PS_ANISOTROPIC()));

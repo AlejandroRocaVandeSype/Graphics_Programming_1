@@ -5,7 +5,11 @@
 
 namespace dae
 {
-	
+	enum  Mesh_Type
+	{
+		vehicle,
+		fire
+	};
 	struct Vertex_PosCol
 	{
 		Vector3 position;
@@ -14,14 +18,14 @@ namespace dae
 		Vector3 normal{};
 		Vector3 tangent{};
 	};
-	class VehicleEffect;
+	class Effect;
 	class Texture;
 	class Mesh final
 	{
 	public:
 		
 
-		Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertices, const std::vector<uint32_t>& indices,
+		Mesh(Mesh_Type type, ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertices, const std::vector<uint32_t>& indices,
 			const std::wstring& shaderPath, const std::unordered_map<std::string, std::string>& texturesPaths);
 		~Mesh();
 
@@ -41,16 +45,18 @@ namespace dae
 		void ToggleShadingMode(const int shadingMode);
 
 		Matrix GetWorldMatrix() const;
-		void SetCameraVar(const Vector3& cameraPos);
+		Effect* GetEffect();
+		//void SetCameraVar(const Vector3& cameraPos);
 
 		void RotateY(float yaw);
 		void Translate(const Vector3& translation);
 
 	private:
 
+		Mesh_Type m_Type;
 		ID3DX11EffectTechnique* m_pTechnique;
 		ID3D11InputLayout* m_pInputLayout;
-		VehicleEffect* m_pEffect;
+		Effect* m_pEffect;
 
 		ID3D11Buffer* m_pVertexBuffer;				// Buffer with all the vertices from our MESH
 		ID3D11Buffer* m_pIndexBuffer;				//	  "		"	"	"   indices	  "	  "    "

@@ -1,18 +1,29 @@
 #include "pch.h"
 #include "Mesh.h"
 #include "VehicleEffect.h"
+#include "FireEffect.h"
 #include "Texture.h"
 
 using namespace dae;
 
-Mesh::Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertices, const std::vector<uint32_t>& indices,
+Mesh::Mesh(Mesh_Type type, ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertices, const std::vector<uint32_t>& indices,
 	const std::wstring& shaderPath, const std::unordered_map<std::string, std::string>& texturesPaths)
-	: m_pTechnique{ nullptr }, m_pInputLayout{ nullptr }, m_pEffect{ nullptr }, m_pVertexBuffer{ nullptr },
-	  m_pIndexBuffer{ nullptr}, m_NumIndices{ static_cast<uint32_t>(indices.size()) },
+	: m_Type{ type }, m_pTechnique{ nullptr }, m_pInputLayout{ nullptr }, m_pEffect{ nullptr }, 
+	  m_pVertexBuffer{ nullptr }, m_pIndexBuffer{ nullptr}, m_NumIndices{ static_cast<uint32_t>(indices.size()) },
 	m_TranslationTransform{}, m_RotationTransform{}, m_WorldMatrix{}, m_ScaleTransform{}
 {
 	//m_pEffect = new Effect(pDevice, L"Resources/PosCol3D.fx");
-	m_pEffect = new VehicleEffect(pDevice, shaderPath);
+
+	if (type == vehicle)
+	{
+		m_pEffect = new VehicleEffect(pDevice, shaderPath);
+	}
+	else
+	{
+		m_pEffect = new FireEffect(pDevice, shaderPath);
+	}
+
+	
 	m_pTechnique = m_pEffect->GetTechnique();
 
 	// CREATE VERTEX LAYOUT
@@ -91,7 +102,7 @@ Mesh::Mesh(ID3D11Device* pDevice, const std::vector<Vertex_PosCol>& vertices, co
 	if (FAILED(result))
 		return;
 
-	// TEXTURES LOAD FOR OUR MESH
+	// TEXTURES LOAD FOR THE MESH
 	m_Textures.reserve(texturesPaths.size());
 	std::string key{};
 	std::string texturePath{};
@@ -196,8 +207,17 @@ void Mesh::Translate(const Vector3& translation)
 
 void Mesh::UpdateMatrices(const Matrix& worldViewProjMatrix)
 {
+	// Both meshes need this
 	m_pEffect->UpdateWorldViewProjMatrix(worldViewProjMatrix);
-	m_pEffect->UpdateWorldMatrix(m_WorldMatrix);
+
+	if (m_Type == vehicle)
+	{
+		VehicleEffect* pVehicleEffect{ dynamic_cast<VehicleEffect*>(m_pEffect)};
+
+		// Only needed for vehicle mesh for Phong calculation
+		if(m_pEffect)
+			pVehicleEffect->UpdateWorldMatrix(m_WorldMatrix);
+	}	
 }
 
 Matrix Mesh::GetWorldMatrix() const
@@ -205,22 +225,27 @@ Matrix Mesh::GetWorldMatrix() const
 	return m_WorldMatrix;
 }
 
-void Mesh::SetCameraVar(const Vector3& cameraPos)
+Effect* Mesh::GetEffect()
 {
-	m_pEffect->SetCameraVar(cameraPos);
+	return m_pEffect;
 }
 
-void Mesh::ToggleTechnique()
-{
-	m_pEffect->ToggleTechnique();
-}
+//void Mesh::SetCameraVar(const Vector3& cameraPos)
+//{
+//	m_pEffect->SetCameraVar(cameraPos);
+//}
 
-void Mesh::ToggleNormalMap()
-{
-	m_pEffect->ToggleNormalMap();
-}
-
-void Mesh::ToggleShadingMode(const int shadingMode)
-{
-	m_pEffect->ToggleShadingMode(shadingMode);
-}
+//void Mesh::ToggleTechnique()
+//{
+//	m_pEffect->ToggleTechnique();
+//}
+//
+//void Mesh::ToggleNormalMap()
+//{
+//	m_pEffect->ToggleNormalMap();
+//}
+//
+//void Mesh::ToggleShadingMode(const int shadingMode)
+//{
+//	m_pEffect->ToggleShadingMode(shadingMode);
+//}

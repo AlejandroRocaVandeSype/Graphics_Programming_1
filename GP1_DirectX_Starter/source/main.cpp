@@ -68,7 +68,7 @@ int main(int argc, char* args[])
 					pRenderer->ToggleNormalMapUse();
 				// Toggle FIREFX MESH
 				if (e.key.keysym.scancode == SDL_SCANCODE_F7)
-					pRenderer->ToggleFiltering();
+					pRenderer->ToggleFireFXMesh();
 				// Toggle SHADING MODE
 				if (e.key.keysym.scancode == SDL_SCANCODE_F8)
 					pRenderer->ToggleShadingMode();

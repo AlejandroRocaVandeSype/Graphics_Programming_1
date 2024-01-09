@@ -56,6 +56,9 @@ namespace dae
 
 		void ShaderBinding();
 
+		void SetShaderResource(const std::unordered_map<std::string, Texture*>& textures, ID3DX11EffectShaderResourceVariable* resourceMap, 
+			const std::string& key);
+
 	};
 }
 

@@ -2,6 +2,8 @@
 #include "Renderer.h"
 #include "Mesh.h"
 #include "Utils.h"
+#include "VehicleEffect.h"
+#include "FireEffect.h"
 
 namespace dae {
 
@@ -61,6 +63,7 @@ namespace dae {
 		// Vehicle Mesh
 		std::vector<Vertex_PosCol> vertices_vehicle{};
 		std::vector<uint32_t> indices_vehicle{};
+		Mesh_Type type = Mesh_Type::vehicle;
 		Utils::ParseOBJ("Resources/vehicle.obj", vertices_vehicle, indices_vehicle);
 
 		std::unordered_map<std::string, std::string> vehicleTextures;
@@ -69,14 +72,17 @@ namespace dae {
 		vehicleTextures.emplace("normal", "Resources/vehicle_normal.png");
 		vehicleTextures.emplace("specular", "Resources/vehicle_specular.png");
 		
-		m_pVehicle = new Mesh(m_pDevice, vertices_vehicle, indices_vehicle, L"Resources/vehicle.fx", vehicleTextures);
+		m_pVehicle = new Mesh(type, m_pDevice, vertices_vehicle, indices_vehicle, L"Resources/vehicle.fx", vehicleTextures);
 
 		// FireFX Mesh
 		std::vector<Vertex_PosCol> vertices_fire{};
 		std::vector<uint32_t> indices_fire{};
 		Utils::ParseOBJ("Resources/fireFX.obj", vertices_fire, indices_fire);
 
-		//m_pFireFX = new Mesh(m_pDevice, vertices_fire, indices_fire, L"Resources/fire.fx");
+		Mesh_Type type2 = Mesh_Type::fire;
+		std::unordered_map<std::string, std::string> fireTextures;
+		fireTextures.emplace("diffuse", "Resources/fireFX_diffuse.png");
+		m_pFireFX = new Mesh(type2, m_pDevice, vertices_fire, indices_fire, L"Resources/fire.fx", fireTextures);
 	}
 
 	Renderer::~Renderer()
@@ -135,8 +141,12 @@ namespace dae {
 	void Renderer::Update(const Timer* pTimer)
 	{
 		m_Camera.Update(pTimer);
-		if(m_DoRotation)
+		if (m_DoRotation)
+		{
 			m_pVehicle->Update(pTimer);
+			m_pFireFX->Update(pTimer);
+		}
+			
 	}
 
 
@@ -153,10 +163,16 @@ namespace dae {
 		// Update WorldViewProj matrix before rendering
 		Matrix worldViewProjMatrix{ m_pVehicle->GetWorldMatrix() * m_Camera.GetViewMatrix() * m_Camera.GetProjectionMatrix() };
 		m_pVehicle->UpdateMatrices(worldViewProjMatrix);
-	
+
+		worldViewProjMatrix = m_pFireFX->GetWorldMatrix() * m_Camera.GetViewMatrix() * m_Camera.GetProjectionMatrix();
+		m_pFireFX->UpdateMatrices(worldViewProjMatrix);
+		
 		//2. SET PIPELINE + INVOKE DRAW CALLS (=RENDER)
 		// Render our meshes
 		m_pVehicle->Render(m_pDeviceContext);
+		
+		if(m_DoRenderFireFX)
+			m_pFireFX->Render(m_pDeviceContext);
 
 
 		//3. PRESENT BACKBUFFER (SWAP)
@@ -166,15 +182,25 @@ namespace dae {
 	}
 
 
-	// TOGGLE RENDERING FUNCTIONS 
+	// TOGGLE RENDERING FUNCTIONS ( ONLY FOR VEHICLE MESH )
 	void Renderer::ToggleFiltering()
 	{
-		m_pVehicle->ToggleTechnique();
+		VehicleEffect* pVehicleEffect{ dynamic_cast<VehicleEffect*>(m_pVehicle->GetEffect()) };
+		if(pVehicleEffect)
+			pVehicleEffect->ToggleTechnique();
 	}
 
 	void Renderer::ToggleNormalMapUse()
 	{
-		m_pVehicle->ToggleNormalMap();
+
+		VehicleEffect* pVehicleEffect{ dynamic_cast<VehicleEffect*>(m_pVehicle->GetEffect()) };
+		if (pVehicleEffect)
+			pVehicleEffect->ToggleNormalMap();
+	}
+
+	void Renderer::ToggleFireFXMesh()
+	{
+		m_DoRenderFireFX = !m_DoRenderFireFX;
 	}
 
 	void Renderer::ToggleRotation(Timer* pTimer)
@@ -217,7 +243,10 @@ namespace dae {
 			break;
 		}
 
-		m_pVehicle->ToggleShadingMode(static_cast<int>(m_ShadingMode));
+		VehicleEffect* pVehicleEffect{ dynamic_cast<VehicleEffect*>(m_pVehicle->GetEffect()) };
+		if (pVehicleEffect)
+			pVehicleEffect->ToggleShadingMode(static_cast<int>(m_ShadingMode));
+
 	}
 
 	HRESULT Renderer::InitializeDirectX()

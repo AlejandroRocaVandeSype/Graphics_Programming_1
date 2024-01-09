@@ -151,26 +151,24 @@ void VehicleEffect::SetNormalMap(const Texture* pNormalText)
 void VehicleEffect::SetMaps(const std::unordered_map<std::string, Texture*>& textures)
 {
 
-	auto textureItr = textures.find("diffuse");
-	if (textureItr != textures.end())
-	{
-		m_pDiffuseMapVar->SetResource(textureItr->second->GetRSV());
-	}
+	SetShaderResource(textures, m_pDiffuseMapVar, "diffuse");
+	SetShaderResource(textures, m_pGlossinessMapVar, "glossiness");
+	SetShaderResource(textures, m_pSpecularMapVar, "specular");
+	SetShaderResource(textures, m_pNormalMapVar, "normal");
 
-	textureItr = textures.find("glossiness");
+}
+
+void VehicleEffect::SetShaderResource(const std::unordered_map<std::string, Texture*>& textures, 
+	ID3DX11EffectShaderResourceVariable* resourceMap, const std::string& key)
+{
+	auto textureItr = textures.find(key);
 	if (textureItr != textures.end())
 	{
-		m_pGlossinessMapVar->SetResource(textureItr->second->GetRSV());
+		resourceMap->SetResource(textureItr->second->GetRSV());
 	}
-	textureItr = textures.find("specular");
-	if (textureItr != textures.end())
+	else
 	{
-		m_pSpecularMapVar->SetResource(textureItr->second->GetRSV());
-	}
-	textureItr = textures.find("normal");
-	if (textureItr != textures.end())
-	{
-		m_pNormalMapVar->SetResource(textureItr->second->GetRSV());
+		std::cout << "Error! Couldn't find " + key + " texture. \n";
 	}
 }
 
