@@ -205,20 +205,7 @@ namespace dae {
 
 	void Renderer::ToggleRotation(Timer* pTimer)
 	{
-		if (m_DoRotation)
-		{
-			
-			pTimer->Stop();
-
-		}
-		else
-		{
-			// It was stopped already -> Continue the timer
-			pTimer->Start();
-		}
-
 		m_DoRotation = !m_DoRotation;
-		pTimer->Update();
 	}
 
 	void Renderer::ToggleShadingMode()

@@ -66,6 +66,7 @@ VS_OUTPUT VS(VS_INPUT input)
 //--------------------------------------------------------
 float4 PS_POINT(VS_OUTPUT input) : SV_TARGET
 {    
+    // No lighting calculation. Only diffuseMap color
     float4 diffuseColor = gDiffuseMap.Sample(samPoint, input.TextureUV);
     
     return diffuseColor;

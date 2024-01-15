@@ -183,7 +183,8 @@ void Mesh::Render(ID3D11DeviceContext* pDeviceContext) const
 
 void Mesh::Update(const Timer* pTimer)
 {
-	RotateY((PI_DIV_2 / 2.f) * pTimer->GetTotal());
+	m_RotationAngle += (PI_DIV_2 / 2.f) * pTimer->GetElapsed(); 
+	RotateY(m_RotationAngle);
 	UpdateTransforms();
 }
 

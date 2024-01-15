@@ -70,6 +70,8 @@ namespace dae
 		Matrix m_TranslationTransform{};
 		Matrix m_ScaleTransform{};
 
+		float m_RotationAngle{};					// Keep track of the rotation from the Mesh
+
 		void UpdateTransforms();
 	};
 }
