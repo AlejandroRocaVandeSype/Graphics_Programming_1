@@ -15,9 +15,11 @@ Texture2D gGlossinessMap : GlossinessMap;
 Texture2D gNormalMap : NormalMap;
 // Hardcoded values for the lighting
 const float3 gLightDirection : LightDirection = float3(.577f, -.577f, .577f);
-const float gLightIntensity : LightIntensity = 2.0f;
-const float gLightAmbient : LightAmbient = float3(0.03f, 0.03f, 0.03f);
+const float gLightIntensity : LightIntensity = 7.0f;
+const float3 gLightAmbient : LightAmbient = float3(0.03f, 0.03f, 0.03f);
 const float gShininess : Shininess = 25.0f;
+
+float gPI = 3.141592653;
 
 bool gUseNormalMap : UseNormalMap;
 int gShadingMode : ShadingMode;
@@ -109,21 +111,21 @@ float CalculateObservedArea(SamplerState samplerType, VS_OUTPUT input)
 		// NORMAL MAP
 		// Create a matrix that makes us able to transform the sampled normal into the correct space
         float3 binormal = cross(input.Normal, input.Tangent);
-        float4x4 tangentSpaceAxis = float4x4(input.Tangent, 0.0f, binormal, 0.0f, input.Normal, 0.0f, float4(0.0f, 0.0f, 0.0f, 1.0f));
+        float3x3 tangentSpaceAxis = float3x3(input.Tangent, binormal, input.Normal);
 	
         float3 sampledNormal = gNormalMap.Sample(samplerType, input.TextureUV);
 		// Remap to correct range [-1, 1]
-        sampledNormal = float3(2.f * sampledNormal.r - 1.f, 2.f * sampledNormal.g - 1.f, 2.f * sampledNormal.b - 1.f);
+        sampledNormal = 2.f * sampledNormal.rgb - float3(1.f, 1.f, 1.f);
 	
         float3 transformedNormal = mul(sampledNormal, tangentSpaceAxis);
 	
-        viewAngle = dot(transformedNormal, -gLightDirection);
+        viewAngle = saturate(dot(transformedNormal, -gLightDirection));
 	
     }
     else
     {
 		// Don't use normal map.
-        viewAngle = dot(input.Normal, -gLightDirection);
+        viewAngle = saturate(dot(input.Normal, -gLightDirection));
     }
 	
     return viewAngle;
@@ -137,49 +139,59 @@ float CalculateObservedArea(SamplerState samplerType, VS_OUTPUT input)
 	* \param n Normal of the Surface
 	* \return Phong Specular Color
 */
-float4 Phong(const float3 ks, const float exp, const float3 l, const float3 v, const float3 n)
+float3 Phong(const float4 ks, const float exp, const float3 l, const float3 v, const float3 n)
 {
-    float3 reflect = l - 2 * dot(n, l) * n;
-    reflect = normalize(reflect);
+    const float3 reflectVec = reflect(l, n);
 	
-    float cosAngle = max(0.0f, dot(reflect, v));
+    float cosAngle = saturate(dot(reflectVec, v)); // Clamp the result between [0, 1]
 	
-    float4 specularReflect = float4(ks.r * pow(cosAngle, exp),
-									ks.g * pow(cosAngle, exp),
-									ks.b * pow(cosAngle, exp), 1.f);
+    float specularReflect = ks.r * pow(cosAngle, exp);
 	
-    return specularReflect;
+    return float3(specularReflect, specularReflect, specularReflect);
 }
 
-// SPECULAR LAMBERT
-float4 CalculateSpecular(SamplerState samplerType, VS_OUTPUT input, float viewAngle, float3 ambient)
+// LAMBERT DIFFUSE REFLECTION
+// * Kd -> Diffuse Reflectance 
+// * cd -> Diffuse Color [RGB]
+float3 Diffuse(float kd, float3 cd)
 {
-    float3 sampledGloss = gGlossinessMap.Sample(samplerType, input.TextureUV);
-    float3 sampledSpecular = gSpecularMap.Sample(samplerType, input.TextureUV);
+    return (kd * cd) / gPI;
+}
+
+
+// SPECULAR LAMBERT
+float3 CalculateSpecular(SamplerState samplerType, VS_OUTPUT input, float viewAngle)
+{
+    float4 sampledGloss = gGlossinessMap.Sample(samplerType, input.TextureUV);
+    float4 sampledSpecular = gSpecularMap.Sample(samplerType, input.TextureUV);
 	
 	// All parameters have the same value
     sampledGloss.r *= gShininess;
 	
-	float invViewDirection = normalize(gCameraPosition - input.WorldPosition.xyz);
+	// Calculate the view dir with the interpolated world position of the pixel 
+	// and the ONB of the camera
+	float3 invViewDirection = normalize(gCameraPosition - input.WorldPosition.xyz);
 	
-    return gLightIntensity * Phong(sampledSpecular, sampledGloss.r, -gLightDirection, invViewDirection, -input.Normal)
-	* viewAngle + float4(ambient.r, ambient.g, ambient.b, 1.f);
-
+    return Phong(sampledSpecular, sampledGloss.r, gLightDirection, invViewDirection, input.Normal);
+	
 }
 
-float4 CalculateCombined(SamplerState samplerType, VS_OUTPUT input, float viewAngle, float3 ambient)
-{
-    if (viewAngle < 0.f)
-        return float4(0.f, 0.f, 0.f, 1.f);
-			
-    float4 specular = CalculateSpecular(samplerType, input, viewAngle, ambient);
-    float4 diffuse = float4(gDiffuseMap.Sample(samplerType, input.TextureUV) * input.Color, 1.f);
+float4 CalculateCombined(SamplerState samplerType, VS_OUTPUT input, float viewAngle)
+{		
+    float3 specular = CalculateSpecular(samplerType, input, viewAngle);
+    float3 diffuse = Diffuse(gLightIntensity, gDiffuseMap.Sample(samplerType, input.TextureUV).rgb);
 				
-    float4 finalColor = specular + diffuse;
+    float3 finalBRDF = diffuse + specular;
 			
-    return gLightIntensity * finalColor * float4(viewAngle, viewAngle, viewAngle, 1.f)
-						+ float4(ambient.r, ambient.g, ambient.b, 1.f);
+    float3 finalRGB = (finalBRDF + gLightAmbient.rgb) * viewAngle;
+	
+    return float4(finalRGB, 1.f);
+	
 }
+
+
+
+
 
 //--------------------------------------------------------
 //	Helper function for the Pixel Shader
@@ -188,34 +200,29 @@ float4 CalculateCombined(SamplerState samplerType, VS_OUTPUT input, float viewAn
 //--------------------------------------------------------
 float4 CalculatePS(SamplerState samplerType, VS_OUTPUT input)
 {
-	// Calculate the view dir with the interpolated world position of the pixel 
-	// and the ONB of the camera ( For Phong)
-    //float invViewDirection = normalize(gCameraPosition - input.WorldPosition.xyz);
-	
-    float3 ambient = gLightAmbient * input.Color;
     float viewAngle = CalculateObservedArea(samplerType, input);
 
     switch (gShadingMode)
     {
 		case SHADING_MODE_OBSERVEDAREA:
-			{
-                if (viewAngle < 0.f)
-                    return float4(0.f, 0.f, 0.f, 1.f); // If it is below 0 the point on the surface points away from the light
-														 // ( It doesn't contribute for the finalColor)			
-                return float4(viewAngle, viewAngle, viewAngle, 1.f) + float4(ambient.r, ambient.g, ambient.b, 1.f);
+			{             		
+                return float4(viewAngle, viewAngle, viewAngle, 1.f);
             }      
 		
         case SHADING_MODE_DIFFUSE:
-            return gLightIntensity * float4(gDiffuseMap.Sample(samplerType, input.TextureUV) * input.Color, 1.f) + float4(ambient.r, ambient.g, ambient.b, 1.f);
-		
+		{
+                float3 finalDiffuse = Diffuse(gLightIntensity, gDiffuseMap.Sample(samplerType, input.TextureUV).rgb);
+                return float4(finalDiffuse, 1.f);
+        }
+           	
         case SHADING_MODE_SPECULAR:         
-                return CalculateSpecular(samplerType, input, viewAngle, ambient);
+            return float4(CalculateSpecular(samplerType, input, viewAngle) * viewAngle, 1.f);
 		
         case SHADING_MODE_COMBINED:
-				return CalculateCombined(samplerType, input, viewAngle, ambient);
+            return CalculateCombined(samplerType, input, viewAngle);
 		
 		default: // By Default use Combined Shading Mode
-            return CalculateCombined(samplerType, input, viewAngle, ambient);
+            return CalculateCombined(samplerType, input, viewAngle);
           
         
     }
@@ -230,10 +237,7 @@ float4 CalculatePS(SamplerState samplerType, VS_OUTPUT input)
 //--------------------------------------------------------
 float4 PS_POINT(VS_OUTPUT input) : SV_TARGET
 {
-	//return float4(input.Color, 1.f);
-	//return float4(gDiffuseMap.Sample(samPoint, input.TextureUV) * input.Color , 1.f);
-	return CalculatePS(samPoint, input);
-	
+	return CalculatePS(samPoint, input);	
 }
 
 //--------------------------------------------------------

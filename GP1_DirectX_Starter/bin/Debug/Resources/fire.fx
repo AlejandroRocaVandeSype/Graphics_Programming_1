@@ -5,6 +5,9 @@ float4x4 gWorldViewProj : WorldViewProjection;
 Texture2D gDiffuseMap : DiffuseMap; // Color texture for our mesh
 
 
+const float gLightIntensity : LightIntensity = 7.0f;
+float gPI = 3.141592653;
+
 // SAMPLE OUR SHADER WITH DIFFERENT SAMPLER STATES
 SamplerState samPoint
 {
@@ -58,6 +61,13 @@ VS_OUTPUT VS(VS_INPUT input)
     return output;
 }
 
+// LAMBERT DIFFUSE REFLECTION
+// * Kd -> Diffuse Reflectance 
+// * cd -> Diffuse Color [RGB]
+float4 Diffuse(float kd, float4 cd)
+{
+    return (kd * cd) / gPI;
+}
 
 //--------------------------------------------------------
 //	Pixel Shader
@@ -67,9 +77,7 @@ VS_OUTPUT VS(VS_INPUT input)
 float4 PS_POINT(VS_OUTPUT input) : SV_TARGET
 {    
     // No lighting calculation. Only diffuseMap color
-    float4 diffuseColor = gDiffuseMap.Sample(samPoint, input.TextureUV);
-    
-    return diffuseColor;
+    return Diffuse(gLightIntensity, gDiffuseMap.Sample(samPoint, input.TextureUV));
 	
 }
 

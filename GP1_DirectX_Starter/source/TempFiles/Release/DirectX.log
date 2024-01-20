@@ -1,1 +1,57 @@
-﻿
+﻿  pch.cpp
+  Effect.cpp
+C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_DirectX_Starter\source\Effect.h(8,8): warning C4099: 'dae::Matrix': type name first seen using 'struct' now seen using 'class'
+  (compiling source file '/Effect.cpp')
+  C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_DirectX_Starter\source\Matrix.h(6,9):
+  see declaration of 'dae::Matrix'
+  
+  Camera.cpp
+  FireEffect.cpp
+C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_DirectX_Starter\source\Effect.h(8,8): warning C4099: 'dae::Matrix': type name first seen using 'struct' now seen using 'class'
+  (compiling source file '/FireEffect.cpp')
+  C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_DirectX_Starter\source\Matrix.h(6,9):
+  see declaration of 'dae::Matrix'
+  
+  Matrix.cpp
+  Mesh.cpp
+C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_DirectX_Starter\source\Effect.h(8,8): warning C4099: 'dae::Matrix': type name first seen using 'struct' now seen using 'class'
+  (compiling source file '/Mesh.cpp')
+  C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_DirectX_Starter\source\Matrix.h(6,9):
+  see declaration of 'dae::Matrix'
+  
+  Renderer.cpp
+C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_DirectX_Starter\source\Effect.h(8,8): warning C4099: 'dae::Matrix': type name first seen using 'struct' now seen using 'class'
+  (compiling source file '/Renderer.cpp')
+  C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_DirectX_Starter\source\Matrix.h(6,9):
+  see declaration of 'dae::Matrix'
+  
+  Texture.cpp
+  Timer.cpp
+  main.cpp
+  Vector2.cpp
+  Vector3.cpp
+  Vector4.cpp
+  VehicleEffect.cpp
+C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_DirectX_Starter\source\Effect.h(8,8): warning C4099: 'dae::Matrix': type name first seen using 'struct' now seen using 'class'
+  (compiling source file '/VehicleEffect.cpp')
+  C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_DirectX_Starter\source\Matrix.h(6,9):
+  see declaration of 'dae::Matrix'
+  
+  Generating code
+  Previous IPDB not found, fall back to full compilation.
+  All 948 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+dx11effects.lib(EffectAPI.obj) : warning LNK4099: PDB '' was not found with 'dx11effects.lib(EffectAPI.obj)' or at ''; linking object as if no debug info
+dx11effects.lib(EffectNonRuntime.obj) : warning LNK4099: PDB '' was not found with 'dx11effects.lib(EffectNonRuntime.obj)' or at ''; linking object as if no debug info
+dx11effects.lib(EffectLoad.obj) : warning LNK4099: PDB '' was not found with 'dx11effects.lib(EffectLoad.obj)' or at ''; linking object as if no debug info
+dx11effects.lib(d3dxGlobal.obj) : warning LNK4099: PDB '' was not found with 'dx11effects.lib(d3dxGlobal.obj)' or at ''; linking object as if no debug info
+dx11effects.lib(EffectReflection.obj) : warning LNK4099: PDB '' was not found with 'dx11effects.lib(EffectReflection.obj)' or at ''; linking object as if no debug info
+dx11effects.lib(EffectRuntime.obj) : warning LNK4099: PDB '' was not found with 'dx11effects.lib(EffectRuntime.obj)' or at ''; linking object as if no debug info
+  DirectX.vcxproj -> C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_DirectX_Starter\bin\Release\DirectX.exe
+  0 File(s) copied
+  0 File(s) copied
+  0 File(s) copied
+  0 File(s) copied
+  0 File(s) copied
+  C:\Studies\Studies\DAE\2º year\Graphics Programming 1\Lab\Graphics-Programming-1\GP1_DirectX_Starter\source\Resources\vehicle.fx
+  1 File(s) copied
